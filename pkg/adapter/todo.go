@@ -1,26 +1,26 @@
 package adapter
 
 import (
-	"context"
-	"fmt"
-
+	"github.com/KatsuyaAkasaka/nt/pkg/domain"
+	"github.com/KatsuyaAkasaka/nt/pkg/usecase"
 	"github.com/spf13/cobra"
 )
 
-type Todo struct{}
+type Todo struct {
+	Usecase usecase.Todo
+}
 
 func (a *Todo) Add() *cobra.Command {
 	c := &Command{
 		Command: "add",
 		Desc:    "add todo list",
-		Exec: func(ctx context.Context, args []string) error {
-			fmt.Println("hello world")
-			return nil
-		},
+		Exec:    a.Usecase.Add,
 	}
 	return c.Convert().ToCobraCommand()
 }
 
-func NewTodoAdatper() *Todo {
-	return &Todo{}
+func NewTodoAdatper(r *domain.Repositories) *Todo {
+	return &Todo{
+		Usecase: usecase.NewTodoUsecase(r),
+	}
 }
