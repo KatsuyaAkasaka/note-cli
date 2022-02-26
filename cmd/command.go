@@ -25,6 +25,7 @@ func Cmd() *cobra.Command {
 	rs := domain.NewRepository(
 		infrastructure.NewTodoRepository(),
 		infrastructure.NewConfigRepository(),
+		infrastructure.NewSetting(),
 	)
 	commands := []Commands{
 		NewTodoCommand(rs),

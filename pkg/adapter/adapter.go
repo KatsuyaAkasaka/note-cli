@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,7 @@ type Command struct {
 	Desc    string
 	Aliases []string
 	Exec    func(ctx context.Context, args []string) error
-	Timeout int64
+	Timeout int
 }
 
 func (c *Command) ToCobraCommand() *cobra.Command {
@@ -42,12 +43,9 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 	}
 }
 
-func (c *Command) Convert() *Command {
-	if c.Command == "" {
-		c.Command = "dummy"
-	}
+func (c *Command) Apply(conf *config.Config) *Command {
 	if c.Timeout == 0 {
-		c.Timeout = 5
+		c.Timeout = conf.Note_cli.Todo.Timeout
 	}
 	return c
 }
