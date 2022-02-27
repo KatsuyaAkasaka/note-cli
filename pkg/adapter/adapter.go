@@ -11,12 +11,13 @@ import (
 )
 
 type Command struct {
-	Command string
-	Desc    string
-	Aliases []string
-	Exec    func(ctx context.Context, flags *pflag.FlagSet, args []string) error
-	Timeout int
-	SetArgs func(cmd *cobra.Command)
+	Command  string
+	Desc     string
+	Aliases  []string
+	Exec     func(ctx context.Context, flags *pflag.FlagSet, args []string) error
+	Timeout  int
+	SetFlags func(cmd *cobra.Command)
+	Args     cobra.PositionalArgs
 }
 
 func (c *Command) ToCobraCommand() *cobra.Command {
@@ -24,6 +25,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 		Use:     c.Command,
 		Short:   c.Desc,
 		Aliases: c.Aliases,
+		Args:    c.Args,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Timeout)*time.Second)
 			defer cancel()
@@ -43,8 +45,8 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 			}
 		},
 	}
-	if c.SetArgs != nil {
-		c.SetArgs(cmd)
+	if c.SetFlags != nil {
+		c.SetFlags(cmd)
 	}
 	return cmd
 }

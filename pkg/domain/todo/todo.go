@@ -5,3 +5,13 @@ type Todo struct {
 	Content string
 	Done    bool
 }
+
+func (t *Todo) ToCheckMarkdown() string {
+	prefix := ""
+	if t.Done {
+		prefix = "- [ ] "
+	} else {
+		prefix = "- [x] "
+	}
+	return prefix + t.Content
+}

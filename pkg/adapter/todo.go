@@ -17,6 +17,15 @@ func (a *Todo) Add() *cobra.Command {
 		Command: "add",
 		Desc:    "add todo list",
 		Exec:    a.Usecase.Add,
+		Args:    cobra.ExactArgs(1),
+		SetFlags: func(cmd *cobra.Command) {
+			cmd.Flags().BoolP(
+				"done",
+				"d",
+				false,
+				"set todo is done or not",
+			)
+		},
 	}
 	setting, err := a.Setting.Get(&setting.GetParams{})
 	if err != nil {

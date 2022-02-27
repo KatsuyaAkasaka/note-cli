@@ -35,7 +35,7 @@ func (r *configRepository) Reset() error {
 	configViper := io.ConfigIo()
 
 	io.SetDefault(configViper)
-	if err := io.Write(configViper); err != nil {
+	if err := io.Create(configViper); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
 	return nil
@@ -51,6 +51,7 @@ func (r *configRepository) SetWorkindDirectory(path string) error {
 	}
 	return nil
 }
+
 func NewConfigRepository() config.Repository {
 	return &configRepository{}
 }

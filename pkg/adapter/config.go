@@ -32,7 +32,7 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 		Desc:    "set store path",
 		Aliases: []string{"sp"},
 		Exec:    a.Usecase.SetPath,
-		SetArgs: func(cmd *cobra.Command) {
+		SetFlags: func(cmd *cobra.Command) {
 			cmd.Flags().StringP(
 				"path",
 				"p",
