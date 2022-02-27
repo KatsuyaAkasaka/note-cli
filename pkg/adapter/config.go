@@ -26,6 +26,28 @@ func (a *Config) Initialize() *cobra.Command {
 	return c.Apply(setting).ToCobraCommand()
 }
 
+func (a *Config) SetWorkingDirectory() *cobra.Command {
+	c := &Command{
+		Command: "set-path",
+		Desc:    "set store path",
+		Aliases: []string{"sp"},
+		Exec:    a.Usecase.SetPath,
+		SetArgs: func(cmd *cobra.Command) {
+			cmd.Flags().StringP(
+				"path",
+				"p",
+				"",
+				"set working directory path to store datas where you want",
+			)
+		},
+	}
+	setting, err := a.Setting.Get(&setting.GetParams{})
+	if err != nil {
+		return nil
+	}
+	return c.Apply(setting).ToCobraCommand()
+}
+
 func NewConfigAdatper(r *domain.Repositories) *Config {
 	return &Config{
 		Usecase: usecase.NewConfigUsecase(r),

@@ -7,18 +7,20 @@ import (
 
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type Command struct {
 	Command string
 	Desc    string
 	Aliases []string
-	Exec    func(ctx context.Context, args []string) error
+	Exec    func(ctx context.Context, flags *pflag.FlagSet, args []string) error
 	Timeout int
+	SetArgs func(cmd *cobra.Command)
 }
 
 func (c *Command) ToCobraCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     c.Command,
 		Short:   c.Desc,
 		Aliases: c.Aliases,
@@ -29,7 +31,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 			errCh := make(chan error)
 
 			go func() {
-				errCh <- c.Exec(ctx, args)
+				errCh <- c.Exec(ctx, cmd.Flags(), args)
 			}()
 
 			select {
@@ -41,11 +43,15 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 			}
 		},
 	}
+	if c.SetArgs != nil {
+		c.SetArgs(cmd)
+	}
+	return cmd
 }
 
 func (c *Command) Apply(conf *config.Config) *Command {
 	if c.Timeout == 0 {
-		c.Timeout = conf.Note_cli.Todo.Timeout
+		c.Timeout = conf.Note_cli.Timeout
 	}
 	return c
 }
