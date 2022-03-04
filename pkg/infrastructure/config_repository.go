@@ -11,31 +11,38 @@ type configRepository struct{}
 
 const errPrefix = "config err:"
 
+// Initialize initialize config based on predefined config
 func (r *configRepository) Initialize() (*config.Config, error) {
-	configIo := io.ConfigIo()
+	configIO := io.ConfigIo()
+	predefinedIO := io.PredefinedIo()
 
-	c, err := io.Get(configIo)
-	if err != nil {
-		if io.IsErrNotFound(err) {
-			if err := io.Copy(io.PredifinedIo(), configIo); err != nil {
-				return nil, fmt.Errorf("%s %w", errPrefix, err)
-			}
+	dst, err := configIO.GetConfig()
+	if err == nil {
+		return dst, nil
+	}
 
-			c, err = io.Get(configIo)
-			if err != nil {
-				return nil, fmt.Errorf("%s %w", errPrefix, err)
-			}
-		} else {
+	if !io.IsErrNotFound(err) {
+		return nil, fmt.Errorf("%s %w", errPrefix, err)
+	}
+
+	if err := predefinedIO.CopyConfigTo(configIO); err != nil {
+		return nil, fmt.Errorf("%s %w", errPrefix, err)
+	}
+	// fmt.Println("=========")
+	// fmt.Printf("%+v", dst)
+	// fmt.Printf("%+v", err)
+
+	if err := configIO.Create(); err != nil {
+		if err != nil {
 			return nil, fmt.Errorf("%s %w", errPrefix, err)
 		}
 	}
-	return c, nil
+	return configIO.GetConfig()
 }
 func (r *configRepository) Reset() error {
-	configViper := io.ConfigIo()
-
-	io.SetDefault(configViper)
-	if err := io.Create(configViper); err != nil {
+	configIO := io.ConfigIo()
+	predefinedIO := io.PredefinedIo()
+	if err := predefinedIO.CopyConfigTo(configIO); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
 	return nil
@@ -45,10 +52,10 @@ func (r *configRepository) SetWorkindDirectory(path string) error {
 	if err := io.Exists(path); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
-	confIO := io.ConfigIo()
-	if err := io.Set(confIO, "note_cli.working_directory", path); err != nil {
-		return fmt.Errorf("%s %w", errPrefix, err)
-	}
+	// confIO := io.ConfigIo()
+	// if err := confIO.Set("general.working_directory", path); err != nil {
+	// 	return fmt.Errorf("%s %w", errPrefix, err)
+	// }
 	return nil
 }
 

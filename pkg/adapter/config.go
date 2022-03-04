@@ -17,13 +17,14 @@ func (a *Config) Initialize() *cobra.Command {
 		Command: "init",
 		Desc:    "initialize config",
 		Aliases: []string{"ini"},
+		Timeout: 3,
 		Exec:    a.Usecase.Init,
 	}
-	setting, err := a.Setting.Get(&setting.GetParams{})
-	if err != nil {
-		return nil
-	}
-	return c.Apply(setting).ToCobraCommand()
+	// setting, err := a.Setting.Get(&setting.GetParams{})
+	// if err != nil {
+	// 	return nil
+	// }
+	return c.ToCobraCommand()
 }
 
 func (a *Config) SetWorkingDirectory() *cobra.Command {

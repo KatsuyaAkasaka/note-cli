@@ -8,63 +8,50 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ConfigIo() *viper.Viper {
-	v := viper.New()
-
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("$HOME/.note-cli")
-	return v
+type ioIns struct {
+	viper *viper.Viper
 }
 
-func PredifinedIo() *viper.Viper {
-	v := viper.New()
+var (
+	configIns     *ioIns
+	predifinedIns *ioIns
+)
 
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("config")
-	return v
-}
+func ConfigIo() *ioIns {
+	if configIns == nil {
+		v := viper.New()
 
-func Load(v *viper.Viper) error {
-	if err := v.ReadInConfig(); err != nil {
-		return err
+		v.SetConfigName("note-cli")
+		v.SetConfigType("yaml")
+		v.AddConfigPath("$HOME/.config")
+
+		configIns = toIO(v)
 	}
-	return nil
+	return configIns
 }
 
-func SetDefault(v *viper.Viper) {
-	v.SetDefault("note_cli.timeout", 5)
+func PredefinedIo() *ioIns {
+	if predifinedIns == nil {
+		v := viper.New()
+
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+		v.AddConfigPath("config")
+
+		predifinedIns = toIO(v)
+	}
+	return predifinedIns
 }
 
-func Set(v *viper.Viper, conf string, val interface{}) error {
-	v.Set(conf, val)
-	if err := Load(v); err != nil {
-		return err
+func toIO(v *viper.Viper) *ioIns {
+	return &ioIns{
+		viper: v,
 	}
-	if err := v.WriteConfig(); err != nil {
-		return err
-	}
-	return nil
 }
 
-func Get(v *viper.Viper) (*config.Config, error) {
-	c := &config.Config{}
-	if err := Load(v); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, err
-		} else {
-			return nil, &ErrNotFound{Err: fmt.Errorf("get err: not found")}
-		}
-	}
-	if err := v.Unmarshal(c); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func Write(v *viper.Viper) error {
-	if err := v.WriteConfig(); err != nil {
+// Load set config data into ioIns
+func (i *ioIns) Load() error {
+	if err := i.viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("config err: %w", err)
 		} else {
@@ -74,37 +61,65 @@ func Write(v *viper.Viper) error {
 	return nil
 }
 
-func Create(v *viper.Viper) error {
-	if err := v.SafeWriteConfig(); err != nil {
+func SetDefault(v *viper.Viper) {
+	v.SetDefault("general.timeout", 5)
+}
+
+// GetConfig get config in ioIns
+func (i *ioIns) GetConfig() (*config.Config, error) {
+	c := &config.Config{}
+	if err := i.Load(); err != nil {
+		return nil, err
+	}
+
+	if err := i.viper.Unmarshal(c); err != nil {
+		return nil, fmt.Errorf("config err: %w", err)
+	}
+	return c, nil
+}
+
+// Write
+func (i *ioIns) Write() error {
+	if err := i.viper.WriteConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("config err: %w", err)
+		} else {
+			return &ErrNotFound{Err: fmt.Errorf("get err: not found")}
+		}
+	}
+	return nil
+}
+
+// Create create config file if file does not exists
+func (i *ioIns) Create() error {
+	if err := i.viper.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	return nil
 }
 
-func WriteOrCreate(v *viper.Viper) error {
-	if err := Write(v); err != nil {
-		if IsErrNotFound(err) {
-			if err := Create(v); err != nil {
-				return err
-			}
-		} else {
+func (i *ioIns) WriteOrCreate() error {
+	if err := i.Write(); err != nil {
+		if !IsErrNotFound(err) {
+			return err
+		}
+		if err := i.Create(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func Copy(from, to *viper.Viper) error {
-	c, err := Get(from)
+func (i *ioIns) CopyConfigTo(to *ioIns) error {
+	c, err := i.GetConfig()
 	if err != nil {
-		return fmt.Errorf("config err: %w", err)
-	}
-
-	to.Set("note_cli.timeout", c.Note_cli.Timeout)
-
-	if err := Create(to); err != nil {
 		return err
 	}
+
+	to.viper.Set("general.timeout", c.General.Timeout)
+	to.viper.Set("general.working_directory", c.General.WorkingDirectory)
+	to.viper.Set("todo.file_name", c.Todo.FileName)
+
 	return nil
 }
 

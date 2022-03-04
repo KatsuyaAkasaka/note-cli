@@ -2,16 +2,42 @@ package config
 
 import "fmt"
 
-type Config struct {
-	Note_cli struct {
-		Timeout           int
-		Working_directory string
-		Todo              struct {
-			Filename string
-		}
+type (
+	Config struct {
+		General General `yaml:"general"`
+		Todo    Todo    `yaml:"todo"`
 	}
-}
+	General struct {
+		Timeout          int    `yaml:"timeout"`
+		WorkingDirectory string `yarml:"working_directory"`
+	}
+	Todo struct {
+		FileName string
+	}
+)
+
+var (
+	_defGeneral General = General{}
+	_defTodo    Todo    = Todo{}
+	def         *Config = &Config{
+		General: _defGeneral,
+		Todo:    _defTodo,
+	}
+)
 
 func (c *Config) TodoPath() string {
-	return fmt.Sprintf(c.Note_cli.Working_directory + "/" + c.Note_cli.Todo.Filename)
+	return fmt.Sprintf(c.General.WorkingDirectory + "/" + c.Todo.FileName)
+}
+
+func (c *Config) OverwriteDefault() *Config {
+	if c.General.Timeout == 0 {
+		c.General.Timeout = def.General.Timeout
+	}
+	if c.General.WorkingDirectory == "" {
+		c.General.WorkingDirectory = def.General.WorkingDirectory
+	}
+	if c.Todo.FileName == "" {
+		c.Todo.FileName = def.Todo.FileName
+	}
+	return c
 }

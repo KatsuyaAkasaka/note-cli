@@ -9,13 +9,23 @@ import (
 type setting struct{}
 
 func (r *setting) Get(params *domainSetting.GetParams) (*config.Config, error) {
-	configIo := io.ConfigIo()
-
-	c, err := io.Get(configIo)
-	if err != nil {
-		return nil, err
+	dst := &config.Config{}
+	var err error
+	configIO := io.ConfigIo()
+	if err := configIO.Load(); err != nil {
+		if !io.IsErrNotFound(err) {
+			return nil, err
+		}
 	}
-	return c, nil
+	dst, err = configIO.GetConfig()
+	if err != nil {
+		if !io.IsErrNotFound(err) {
+			return nil, err
+		} else {
+			dst = &config.Config{}
+		}
+	}
+	return dst.OverwriteDefault(), nil
 }
 
 func NewSetting() domainSetting.Setting {

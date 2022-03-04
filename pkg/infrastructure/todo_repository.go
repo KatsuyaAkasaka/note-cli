@@ -11,7 +11,7 @@ type todoRepository struct{}
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
 	configIO := io.ConfigIo()
-	c, err := io.Get(configIO)
+	c, err := configIO.GetConfig()
 	if err != nil {
 		return nil, err
 	}

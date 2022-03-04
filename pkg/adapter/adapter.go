@@ -38,7 +38,6 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 
 			select {
 			case <-ctx.Done():
-				fmt.Println(ctx.Err())
 				return fmt.Errorf("unknown error")
 			case err := <-errCh:
 				return err
@@ -52,8 +51,6 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 }
 
 func (c *Command) Apply(conf *config.Config) *Command {
-	if c.Timeout == 0 {
-		c.Timeout = conf.Note_cli.Timeout
-	}
+	c.Timeout = conf.General.Timeout
 	return c
 }
