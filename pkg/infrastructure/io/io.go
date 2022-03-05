@@ -15,6 +15,7 @@ type ioIns struct {
 var (
 	configIns     *ioIns
 	predifinedIns *ioIns
+	defaultIns    *ioIns
 )
 
 func ConfigIo() *ioIns {
@@ -34,13 +35,26 @@ func PredefinedIo() *ioIns {
 	if predifinedIns == nil {
 		v := viper.New()
 
-		v.SetConfigName("config")
+		v.SetConfigName("src")
 		v.SetConfigType("yaml")
 		v.AddConfigPath("config")
 
 		predifinedIns = toIO(v)
 	}
 	return predifinedIns
+}
+
+func DefaultIo() *ioIns {
+	if defaultIns == nil {
+		v := viper.New()
+
+		v.SetConfigName("default")
+		v.SetConfigType("yaml")
+		v.AddConfigPath("config")
+
+		defaultIns = toIO(v)
+	}
+	return defaultIns
 }
 
 func toIO(v *viper.Viper) *ioIns {

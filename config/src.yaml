@@ -1,0 +1,3 @@
+general:
+  timeout: 5
+  working_directory: "$HOME"

@@ -12,11 +12,6 @@ func (r *setting) Get(params *domainSetting.GetParams) (*config.Config, error) {
 	dst := &config.Config{}
 	var err error
 	configIO := io.ConfigIo()
-	if err := configIO.Load(); err != nil {
-		if !io.IsErrNotFound(err) {
-			return nil, err
-		}
-	}
 	dst, err = configIO.GetConfig()
 	if err != nil {
 		if !io.IsErrNotFound(err) {
@@ -25,7 +20,22 @@ func (r *setting) Get(params *domainSetting.GetParams) (*config.Config, error) {
 			dst = &config.Config{}
 		}
 	}
-	return dst.OverwriteDefault(), nil
+	c, err := r.Default()
+	if err != nil {
+		return nil, err
+	}
+	return dst.Overwrite(c), nil
+}
+
+func (r *setting) Default() (*config.Config, error) {
+	dst := &config.Config{}
+	var err error
+	defaultIO := io.DefaultIo()
+	dst, err = defaultIO.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+	return dst, nil
 }
 
 func NewSetting() domainSetting.Setting {

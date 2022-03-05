@@ -17,10 +17,13 @@ func (a *Config) Initialize() *cobra.Command {
 		Command: "init",
 		Desc:    "initialize config",
 		Aliases: []string{"ini"},
-		Timeout: 3,
 		Exec:    a.Usecase.Init,
 	}
-	return c.ToCobraCommand()
+	dflt, err := a.Setting.Default()
+	if err != nil {
+		return nil
+	}
+	return c.Apply(dflt).ToCobraCommand()
 }
 
 func (a *Config) SetWorkingDirectory() *cobra.Command {
@@ -34,7 +37,7 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 				"path",
 				"p",
 				"",
-				"set working directory path to store datas where you want",
+				"set working directory path to store where you want",
 			)
 		},
 	}

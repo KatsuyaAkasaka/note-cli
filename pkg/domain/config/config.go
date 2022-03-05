@@ -16,28 +16,31 @@ type (
 	}
 )
 
-var (
-	_defGeneral General = General{}
-	_defTodo    Todo    = Todo{}
-	def         *Config = &Config{
-		General: _defGeneral,
-		Todo:    _defTodo,
-	}
-)
+// var (
+// 	_defGeneral General = General{
+// 		Timeout:          5,
+// 		WorkingDirectory: "",
+// 	}
+// 	_defTodo Todo    = Todo{}
+// 	def      *Config = &Config{
+// 		General: _defGeneral,
+// 		Todo:    _defTodo,
+// 	}
+// )
 
 func (c *Config) TodoPath() string {
 	return fmt.Sprintf(c.General.WorkingDirectory + "/" + c.Todo.FileName)
 }
 
-func (c *Config) OverwriteDefault() *Config {
+func (c *Config) Overwrite(to *Config) *Config {
 	if c.General.Timeout == 0 {
-		c.General.Timeout = def.General.Timeout
+		c.General.Timeout = to.General.Timeout
 	}
 	if c.General.WorkingDirectory == "" {
-		c.General.WorkingDirectory = def.General.WorkingDirectory
+		c.General.WorkingDirectory = to.General.WorkingDirectory
 	}
 	if c.Todo.FileName == "" {
-		c.Todo.FileName = def.Todo.FileName
+		c.Todo.FileName = to.Todo.FileName
 	}
 	return c
 }
