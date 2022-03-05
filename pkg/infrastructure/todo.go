@@ -13,11 +13,7 @@ type todoRepository struct {
 }
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
-	c, err := io.ConfigClient().GetConfigWithOverwriteDefault(true)
-	if err != nil {
-		return nil, err
-	}
-	todoIO := io.NewClient(c.General.WorkingDirectory, c.Todo.FileName, "md")
+	todoIO := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, "md")
 	if err := io.AppendLine(todoIO, t.ToCheckMarkdown()); err != nil {
 		return nil, err
 	}

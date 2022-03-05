@@ -1,5 +1,5 @@
 general:
-  working_directory: "$HOME"
+  working_directory: "$HOME/Documents"
 todo:
   file_name: "todo"
   timeout: 5

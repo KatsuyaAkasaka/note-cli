@@ -10,8 +10,9 @@ import (
 )
 
 type client struct {
-	viper *viper.Viper
-	Path  string
+	viper    *viper.Viper
+	FullPath string
+	DirPath  string
 }
 
 var (
@@ -26,12 +27,16 @@ func NewClient(p, name, ext string) *client {
 	v.AddConfigPath(p)
 	v.SetConfigName(name)
 	v.SetConfigType(ext)
-	return toIO(v, path.Join(p, name)+"."+ext)
+	return &client{
+		viper:    v,
+		FullPath: path.Join(p, name) + "." + ext,
+		DirPath:  p,
+	}
 }
 
 func ConfigClient() *client {
 	if configClient == nil {
-		configClient = NewClient("$HOME/.config", "note-cli", "yaml")
+		configClient = NewClient("$HOME/.config/note-cli", "config", "yaml")
 	}
 	return configClient
 }
@@ -48,13 +53,6 @@ func DefaultClient() *client {
 		defaultClient = NewClient("config", "default", "yaml")
 	}
 	return defaultClient
-}
-
-func toIO(v *viper.Viper, path string) *client {
-	return &client{
-		viper: v,
-		Path:  path,
-	}
 }
 
 // Load set config data into client
@@ -91,8 +89,6 @@ func (i *client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
 
 // GetConfigWithOverwriteDefault get default config overrides config file
 func (i *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
-	// defaultC := &config.Config{}
-	// var err error
 	c, err := i.GetConfig(notFoundAsErr)
 	if err != nil {
 		return nil, err
@@ -120,12 +116,16 @@ func (i *client) Write() error {
 
 // Create create config file if file does not exists
 func (i *client) Create() error {
+	if err := os.MkdirAll(AbsolutePath(i.DirPath), 0755); err != nil {
+		return fmt.Errorf("config err: %w", err)
+	}
 	if err := i.viper.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	return nil
 }
 
+// WriteOrCreate create config file and directory if file or directory does not exists
 func (i *client) WriteOrCreate() error {
 	if err := i.Write(); err != nil {
 		if !IsErrNotFound(err) {
@@ -166,12 +166,12 @@ func Exists(path string) error {
 }
 
 func AppendLine(target *client, line string) error {
-	test_file_append, err := os.OpenFile(target.Path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+	fp, err := os.OpenFile(AbsolutePath(target.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		return err
 	}
-	defer test_file_append.Close()
-	if _, err := fmt.Fprintln(test_file_append, line); err != nil {
+	defer fp.Close()
+	if _, err := fmt.Fprintln(fp, line); err != nil {
 		return err
 	}
 	return nil

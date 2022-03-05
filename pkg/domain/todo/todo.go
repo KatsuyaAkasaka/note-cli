@@ -9,9 +9,9 @@ type Todo struct {
 func (t *Todo) ToCheckMarkdown() string {
 	prefix := ""
 	if t.Done {
-		prefix = "- [ ] "
-	} else {
 		prefix = "- [x] "
+	} else {
+		prefix = "- [ ] "
 	}
 	return prefix + t.Content
 }
