@@ -2,34 +2,32 @@ package adapter
 
 import (
 	"github.com/KatsuyaAkasaka/nt/pkg/domain"
-	"github.com/KatsuyaAkasaka/nt/pkg/domain/setting"
+	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/KatsuyaAkasaka/nt/pkg/usecase"
 	"github.com/spf13/cobra"
 )
 
 type Config struct {
 	Usecase usecase.Config
-	Setting setting.Setting
+	Config  *config.Config
 }
 
 func (a *Config) Initialize() *cobra.Command {
 	c := &Command{
 		Command: "init",
 		Desc:    "initialize config",
+		Option:  NewOption().Apply(KindConfig, a.Config),
 		Aliases: []string{"ini"},
 		Exec:    a.Usecase.Init,
 	}
-	dflt, err := a.Setting.Default()
-	if err != nil {
-		return nil
-	}
-	return c.Apply(dflt).ToCobraCommand()
+	return c.ToCobraCommand()
 }
 
 func (a *Config) SetWorkingDirectory() *cobra.Command {
 	c := &Command{
 		Command: "set-path",
 		Desc:    "set store path",
+		Option:  NewOption().Apply(KindConfig, a.Config),
 		Aliases: []string{"sp"},
 		Exec:    a.Usecase.SetPath,
 		SetFlags: func(cmd *cobra.Command) {
@@ -41,16 +39,19 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 			)
 		},
 	}
-	setting, err := a.Setting.Get(&setting.GetParams{})
-	if err != nil {
-		return nil
-	}
-	return c.Apply(setting).ToCobraCommand()
+	return c.ToCobraCommand()
 }
 
 func NewConfigAdatper(r *domain.Repositories) *Config {
+	config, err := r.ConfigRepository.Get(&config.ConfigGetParams{
+		Overwrite:     true,
+		NotFoundAsErr: false,
+	})
+	if err != nil {
+		return nil
+	}
 	return &Config{
 		Usecase: usecase.NewConfigUsecase(r),
-		Setting: r.Setting,
+		Config:  config,
 	}
 }

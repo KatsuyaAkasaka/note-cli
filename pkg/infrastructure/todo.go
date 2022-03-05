@@ -10,12 +10,12 @@ import (
 type todoRepository struct{}
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
-	configIO := io.ConfigIo()
-	c, err := configIO.GetConfig()
+	c, err := io.ConfigClient().GetConfigWithOverwriteDefault(true)
 	if err != nil {
 		return nil, err
 	}
-	if err := io.Append(c.TodoPath(), t.ToCheckMarkdown()); err != nil {
+	todoIO := io.NewClient(c.General.WorkingDirectory, c.Todo.FileName, "md")
+	if err := io.AppendLine(todoIO, t.ToCheckMarkdown()); err != nil {
 		return nil, err
 	}
 	return t, nil

@@ -10,12 +10,38 @@ import (
 	"github.com/spf13/pflag"
 )
 
+type Kind int
+
+const (
+	KindUnspecified Kind = iota
+	KindConfig
+	KindTodo
+)
+
+type Option struct {
+	Timeout          int
+	WorkingDirectory string
+}
+
+func NewOption() *Option {
+	return &Option{}
+}
+
+func (o *Option) Apply(i Kind, c *config.Config) *Option {
+	switch i {
+	case KindTodo, KindConfig:
+		o.Timeout = c.Todo.Timeout
+	}
+	o.WorkingDirectory = c.General.WorkingDirectory
+	return o
+}
+
 type Command struct {
 	Command  string
 	Desc     string
 	Aliases  []string
 	Exec     func(ctx context.Context, flags *pflag.FlagSet, args []string) error
-	Timeout  int
+	Option   *Option
 	SetFlags func(cmd *cobra.Command)
 	Args     cobra.PositionalArgs
 }
@@ -27,7 +53,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 		Aliases: c.Aliases,
 		Args:    c.Args,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Timeout)*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Option.Timeout)*time.Second)
 			defer cancel()
 
 			errCh := make(chan error)
@@ -50,7 +76,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 	return cmd
 }
 
-func (c *Command) Apply(conf *config.Config) *Command {
-	c.Timeout = conf.General.Timeout
-	return c
-}
+// func (c *Command) Apply(conf *config.Config) *Command {
+// 	c.Timeout = conf.General.Timeout
+// 	return c
+// }

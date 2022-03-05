@@ -1,3 +1,6 @@
 general:
-  timeout: 5
   working_directory: "$HOME"
+todo:
+  file_name: "todo"
+  timeout: 5
+

@@ -3,68 +3,62 @@ package io
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/spf13/viper"
 )
 
-type ioIns struct {
+type client struct {
 	viper *viper.Viper
+	Path  string
 }
 
 var (
-	configIns     *ioIns
-	predifinedIns *ioIns
-	defaultIns    *ioIns
+	configClient     *client
+	predefinedClient *client
+	defaultClient    *client
 )
 
-func ConfigIo() *ioIns {
-	if configIns == nil {
-		v := viper.New()
+func NewClient(p, name, ext string) *client {
+	v := viper.New()
 
-		v.SetConfigName("note-cli")
-		v.SetConfigType("yaml")
-		v.AddConfigPath("$HOME/.config")
-
-		configIns = toIO(v)
-	}
-	return configIns
+	v.AddConfigPath(p)
+	v.SetConfigName(name)
+	v.SetConfigType(ext)
+	return toIO(v, path.Join(p, name)+"."+ext)
 }
 
-func PredefinedIo() *ioIns {
-	if predifinedIns == nil {
-		v := viper.New()
-
-		v.SetConfigName("src")
-		v.SetConfigType("yaml")
-		v.AddConfigPath("config")
-
-		predifinedIns = toIO(v)
+func ConfigClient() *client {
+	if configClient == nil {
+		configClient = NewClient("$HOME/.config", "note-cli", "yaml")
 	}
-	return predifinedIns
+	return configClient
 }
 
-func DefaultIo() *ioIns {
-	if defaultIns == nil {
-		v := viper.New()
-
-		v.SetConfigName("default")
-		v.SetConfigType("yaml")
-		v.AddConfigPath("config")
-
-		defaultIns = toIO(v)
+func PredefinedClient() *client {
+	if predefinedClient == nil {
+		predefinedClient = NewClient("config", "src", "yaml")
 	}
-	return defaultIns
+	return predefinedClient
 }
 
-func toIO(v *viper.Viper) *ioIns {
-	return &ioIns{
+func DefaultClient() *client {
+	if defaultClient == nil {
+		defaultClient = NewClient("config", "default", "yaml")
+	}
+	return defaultClient
+}
+
+func toIO(v *viper.Viper, path string) *client {
+	return &client{
 		viper: v,
+		Path:  path,
 	}
 }
 
-// Load set config data into ioIns
-func (i *ioIns) Load() error {
+// Load set config data into client
+func (i *client) Load() error {
 	if err := i.viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("config err: %w", err)
@@ -79,10 +73,13 @@ func SetDefault(v *viper.Viper) {
 	v.SetDefault("general.timeout", 5)
 }
 
-// GetConfig get config in ioIns
-func (i *ioIns) GetConfig() (*config.Config, error) {
+// GetConfig get config from config file
+func (i *client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
 	c := &config.Config{}
 	if err := i.Load(); err != nil {
+		if IsErrNotFound(err) && !notFoundAsErr {
+			return c, nil
+		}
 		return nil, err
 	}
 
@@ -92,8 +89,25 @@ func (i *ioIns) GetConfig() (*config.Config, error) {
 	return c, nil
 }
 
+// GetConfigWithOverwriteDefault get default config overrides config file
+func (i *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
+	// defaultC := &config.Config{}
+	// var err error
+	c, err := i.GetConfig(notFoundAsErr)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultC, err := DefaultClient().GetConfig(notFoundAsErr)
+	if err != nil {
+		return nil, err
+	}
+
+	return defaultC.Overwrite(c), nil
+}
+
 // Write
-func (i *ioIns) Write() error {
+func (i *client) Write() error {
 	if err := i.viper.WriteConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("config err: %w", err)
@@ -105,14 +119,14 @@ func (i *ioIns) Write() error {
 }
 
 // Create create config file if file does not exists
-func (i *ioIns) Create() error {
+func (i *client) Create() error {
 	if err := i.viper.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	return nil
 }
 
-func (i *ioIns) WriteOrCreate() error {
+func (i *client) WriteOrCreate() error {
 	if err := i.Write(); err != nil {
 		if !IsErrNotFound(err) {
 			return err
@@ -124,19 +138,19 @@ func (i *ioIns) WriteOrCreate() error {
 	return nil
 }
 
-func (i *ioIns) Set(key string, value interface{}) {
+func (i *client) Set(key string, value interface{}) {
 	i.viper.Set(key, value)
 }
 
-func (i *ioIns) CopyConfigTo(to *ioIns) error {
-	c, err := i.GetConfig()
+func (i *client) CopyConfigTo(to *client) error {
+	c, err := i.GetConfig(true)
 	if err != nil {
 		return err
 	}
 
-	to.Set("general.timeout", c.General.Timeout)
 	to.Set("general.working_directory", c.General.WorkingDirectory)
 	to.Set("todo.file_name", c.Todo.FileName)
+	to.Set("todo.timeout", c.Todo.Timeout)
 
 	return nil
 }
@@ -151,8 +165,8 @@ func Exists(path string) error {
 	return nil
 }
 
-func Append(path, line string) error {
-	test_file_append, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+func AppendLine(target *client, line string) error {
+	test_file_append, err := os.OpenFile(target.Path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		return err
 	}
