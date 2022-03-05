@@ -20,10 +20,6 @@ func (a *Config) Initialize() *cobra.Command {
 		Timeout: 3,
 		Exec:    a.Usecase.Init,
 	}
-	// setting, err := a.Setting.Get(&setting.GetParams{})
-	// if err != nil {
-	// 	return nil
-	// }
 	return c.ToCobraCommand()
 }
 

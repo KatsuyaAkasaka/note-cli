@@ -110,15 +110,19 @@ func (i *ioIns) WriteOrCreate() error {
 	return nil
 }
 
+func (i *ioIns) Set(key string, value interface{}) {
+	i.viper.Set(key, value)
+}
+
 func (i *ioIns) CopyConfigTo(to *ioIns) error {
 	c, err := i.GetConfig()
 	if err != nil {
 		return err
 	}
 
-	to.viper.Set("general.timeout", c.General.Timeout)
-	to.viper.Set("general.working_directory", c.General.WorkingDirectory)
-	to.viper.Set("todo.file_name", c.Todo.FileName)
+	to.Set("general.timeout", c.General.Timeout)
+	to.Set("general.working_directory", c.General.WorkingDirectory)
+	to.Set("todo.file_name", c.Todo.FileName)
 
 	return nil
 }

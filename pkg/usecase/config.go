@@ -17,7 +17,9 @@ type ConfigUsecase struct {
 }
 
 func (u *ConfigUsecase) Init(ctx context.Context, flags *pflag.FlagSet, args []string) error {
-	u.Repositories.ConfigRepository.Initialize()
+	if _, err := u.Repositories.ConfigRepository.Initialize(); err != nil {
+		return err
+	}
 	return nil
 }
 

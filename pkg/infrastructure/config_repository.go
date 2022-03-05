@@ -28,9 +28,6 @@ func (r *configRepository) Initialize() (*config.Config, error) {
 	if err := predefinedIO.CopyConfigTo(configIO); err != nil {
 		return nil, fmt.Errorf("%s %w", errPrefix, err)
 	}
-	// fmt.Println("=========")
-	// fmt.Printf("%+v", dst)
-	// fmt.Printf("%+v", err)
 
 	if err := configIO.Create(); err != nil {
 		if err != nil {
@@ -52,10 +49,11 @@ func (r *configRepository) SetWorkindDirectory(path string) error {
 	if err := io.Exists(path); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
-	// confIO := io.ConfigIo()
-	// if err := confIO.Set("general.working_directory", path); err != nil {
-	// 	return fmt.Errorf("%s %w", errPrefix, err)
-	// }
+	confIO := io.ConfigIo()
+	confIO.Set("general.working_directory", path)
+	if err := confIO.Write(); err != nil {
+		return fmt.Errorf("%s %w", errPrefix, err)
+	}
 	return nil
 }
 
