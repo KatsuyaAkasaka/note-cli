@@ -9,6 +9,7 @@ import (
 
 type Config interface {
 	Init(ctx context.Context, flags *pflag.FlagSet, args []string) error
+	Reset(ctx context.Context, flags *pflag.FlagSet, args []string) error
 	SetPath(ctx context.Context, flags *pflag.FlagSet, args []string) error
 }
 
@@ -18,6 +19,13 @@ type ConfigUsecase struct {
 
 func (u *ConfigUsecase) Init(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 	if _, err := u.Repositories.ConfigRepository.Initialize(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *ConfigUsecase) Reset(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+	if err := u.Repositories.ConfigRepository.Reset(); err != nil {
 		return err
 	}
 	return nil

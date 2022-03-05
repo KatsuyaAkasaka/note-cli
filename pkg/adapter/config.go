@@ -23,6 +23,17 @@ func (a *Config) Initialize() *cobra.Command {
 	return c.ToCobraCommand()
 }
 
+func (a *Config) Reset() *cobra.Command {
+	c := &Command{
+		Command: "reset",
+		Desc:    "reset config",
+		Option:  NewOption().Apply(KindConfig, a.Config),
+		Aliases: []string{"ini"},
+		Exec:    a.Usecase.Reset,
+	}
+	return c.ToCobraCommand()
+}
+
 func (a *Config) SetWorkingDirectory() *cobra.Command {
 	c := &Command{
 		Command: "set-path",

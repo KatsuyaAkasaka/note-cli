@@ -20,6 +20,7 @@ func (c *ConfigCommand) Cmd() *cobra.Command {
 	a := adapter.NewConfigAdatper(c.Repositories)
 	configCmd.AddCommand(
 		a.Initialize(),
+		a.Reset(),
 		a.SetWorkingDirectory(),
 	)
 	return configCmd

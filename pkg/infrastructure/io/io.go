@@ -106,7 +106,7 @@ func (i *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Conf
 	return defaultC.Overwrite(c), nil
 }
 
-// Write
+// Write write config file if file exists
 func (i *client) Write() error {
 	if err := i.viper.WriteConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {

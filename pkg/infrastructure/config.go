@@ -42,6 +42,9 @@ func (r *configRepository) Reset() error {
 	if err := PredefinedClient.CopyConfigTo(ConfigClient); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
+	if err := ConfigClient.WriteOrCreate(); err != nil {
+		return fmt.Errorf("%s %w", errPrefix, err)
+	}
 	return nil
 }
 
@@ -59,8 +62,10 @@ func (r *configRepository) SetWorkindDirectory(path string) error {
 
 func (r *configRepository) Get(params *config.ConfigGetParams) (*config.Config, error) {
 	ConfigClient := io.ConfigClient()
-	dst := &config.Config{}
-	var err error
+	var (
+		dst *config.Config
+		err error
+	)
 	if params.Overwrite {
 		dst, err = ConfigClient.GetConfigWithOverwriteDefault(params.NotFoundAsErr)
 	} else {
