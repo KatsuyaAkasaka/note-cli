@@ -1,10 +1,14 @@
 package adapter
 
 import (
+	"context"
+
+	"github.com/KatsuyaAkasaka/nt/pkg/adapter/marshaler"
 	"github.com/KatsuyaAkasaka/nt/pkg/domain"
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/KatsuyaAkasaka/nt/pkg/usecase"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type Todo struct {
@@ -36,8 +40,13 @@ func (a *Todo) List() *cobra.Command {
 		Command: "list",
 		Desc:    "list todos",
 		Aliases: []string{"l"},
-		Exec:    a.Usecase.List,
-		Option:  a.Option,
+		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+			todos, err := a.Usecase.List(ctx, flags, args)
+			output := marshaler.TodosToOutput(todos)
+			Outputs(output)
+			return err
+		},
+		Option: a.Option,
 	}
 	return c.ToCobraCommand()
 }

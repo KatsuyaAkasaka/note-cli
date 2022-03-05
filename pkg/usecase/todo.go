@@ -11,7 +11,7 @@ import (
 
 type Todo interface {
 	Add(ctx context.Context, flags *pflag.FlagSet, args []string) error
-	List(ctx context.Context, flags *pflag.FlagSet, args []string) error
+	List(ctx context.Context, flags *pflag.FlagSet, args []string) (todo.Todos, error)
 }
 
 type TodoUsecase struct {
@@ -35,12 +35,14 @@ func (u *TodoUsecase) Add(ctx context.Context, flags *pflag.FlagSet, args []stri
 	return nil
 }
 
-func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, args []string) error {
-	_, err := u.Repositories.TodoRepository.List(ctx, &todo.ListParams{})
+func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, args []string) (todo.Todos, error) {
+	todos, err := u.Repositories.TodoRepository.List(ctx, &todo.ListParams{})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return todos, nil
+	// contents := todo.FormatMD.ContentAll(todos)
+	// return contents, nil
 }
 
 func NewTodoUsecase(r *domain.Repositories) Todo {

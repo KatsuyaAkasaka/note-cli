@@ -27,10 +27,16 @@ func (r *todoRepository) SetDone(ctx context.Context, params *todo.SetDoneParams
 }
 func (r *todoRepository) List(ctx context.Context, params *todo.ListParams) (todo.Todos, error) {
 	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
-	if err := todoClient.Open(); err != nil {
+	contents, err := todoClient.ReadAll()
+	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	todos := todo.FormatMD.ParseAll(contents)
+	return todos.FilterBy(
+		func(t *todo.Todo) bool {
+			return t.Content != ""
+		},
+	), nil
 }
 func (r *todoRepository) Delete(ctx context.Context, params *todo.DeleteParams) (*todo.Todo, error) {
 	return nil, nil

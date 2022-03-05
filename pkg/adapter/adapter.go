@@ -75,3 +75,13 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 	}
 	return cmd
 }
+
+func Output(str string) {
+	fmt.Println(str)
+}
+
+func Outputs(str []string) {
+	for i := range str {
+		Output(str[i])
+	}
+}

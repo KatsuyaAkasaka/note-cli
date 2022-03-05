@@ -15,19 +15,23 @@ const (
 )
 
 func (t *Todo) ToContent(fileType FileType) string {
-	prefix := ""
 	switch fileType {
 	case FileTypeMarkdown:
-		if t.Done {
-			prefix = "- [x] "
-		} else {
-			prefix = "- [ ] "
-		}
-
+		return FormatMD.Content(t)
 	}
-	return prefix + t.Content
+	return t.Content
 }
 
 func (f FileType) String() string {
 	return string(f)
+}
+
+func (ts Todos) FilterBy(filter func(t *Todo) bool) Todos {
+	dst := make(Todos, 0, len(ts))
+	for i := range ts {
+		if filter(ts[i]) {
+			dst = append(dst, ts[i])
+		}
+	}
+	return dst
 }

@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
+	"github.com/KatsuyaAkasaka/nt/pkg/domain/utils"
 	"github.com/spf13/viper"
 )
 
@@ -118,7 +120,7 @@ func (c *client) Write() error {
 
 // Create create config file if file does not exists
 func (c *client) Create() error {
-	if err := os.MkdirAll(AbsolutePath(c.DirPath), 0755); err != nil {
+	if err := os.MkdirAll(utils.AbsolutePath(c.DirPath), 0755); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	if err := c.viper.SafeWriteConfig(); err != nil {
@@ -168,7 +170,7 @@ func Exists(path string) error {
 }
 
 func AppendLine(target *client, line string) error {
-	fp, err := os.OpenFile(AbsolutePath(target.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
+	fp, err := os.OpenFile(utils.AbsolutePath(target.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		return err
 	}
@@ -179,8 +181,8 @@ func AppendLine(target *client, line string) error {
 	return nil
 }
 
-func (c *client) Open() error {
-	fp, err := os.Open(AbsolutePath(c.FullPath))
+func (c *client) ReadAll() ([]string, error) {
+	fp, err := os.Open(utils.AbsolutePath(c.FullPath))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -191,6 +193,5 @@ func (c *client) Open() error {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(data))
-	return nil
+	return strings.Split(string(data), "\n"), nil
 }
