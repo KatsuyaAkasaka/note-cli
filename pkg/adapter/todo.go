@@ -31,6 +31,17 @@ func (a *Todo) Add() *cobra.Command {
 	return c.ToCobraCommand()
 }
 
+func (a *Todo) List() *cobra.Command {
+	c := &Command{
+		Command: "list",
+		Desc:    "list todos",
+		Aliases: []string{"l"},
+		Exec:    a.Usecase.List,
+		Option:  a.Option,
+	}
+	return c.ToCobraCommand()
+}
+
 func NewTodoAdatper(r *domain.Repositories, c *config.Config) *Todo {
 	return &Todo{
 		Usecase: usecase.NewTodoUsecase(r),

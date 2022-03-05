@@ -75,8 +75,3 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 	}
 	return cmd
 }
-
-// func (c *Command) Apply(conf *config.Config) *Command {
-// 	c.Timeout = conf.General.Timeout
-// 	return c
-// }

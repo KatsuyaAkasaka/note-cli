@@ -11,6 +11,7 @@ import (
 
 type Todo interface {
 	Add(ctx context.Context, flags *pflag.FlagSet, args []string) error
+	List(ctx context.Context, flags *pflag.FlagSet, args []string) error
 }
 
 type TodoUsecase struct {
@@ -28,6 +29,14 @@ func (u *TodoUsecase) Add(ctx context.Context, flags *pflag.FlagSet, args []stri
 		Done:    done,
 	}
 	t, err = u.Repositories.TodoRepository.Create(ctx, t)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+	_, err := u.Repositories.TodoRepository.List(ctx, &todo.ListParams{})
 	if err != nil {
 		return err
 	}

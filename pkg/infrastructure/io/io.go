@@ -2,6 +2,8 @@ package io
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path"
 
@@ -56,8 +58,8 @@ func DefaultClient() *client {
 }
 
 // Load set config data into client
-func (i *client) Load() error {
-	if err := i.viper.ReadInConfig(); err != nil {
+func (c *client) Load() error {
+	if err := c.viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("config err: %w", err)
 		} else {
@@ -72,24 +74,24 @@ func SetDefault(v *viper.Viper) {
 }
 
 // GetConfig get config from config file
-func (i *client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
-	c := &config.Config{}
-	if err := i.Load(); err != nil {
+func (c *client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
+	conf := &config.Config{}
+	if err := c.Load(); err != nil {
 		if IsErrNotFound(err) && !notFoundAsErr {
-			return c, nil
+			return conf, nil
 		}
 		return nil, err
 	}
 
-	if err := i.viper.Unmarshal(c); err != nil {
+	if err := c.viper.Unmarshal(conf); err != nil {
 		return nil, fmt.Errorf("config err: %w", err)
 	}
-	return c, nil
+	return conf, nil
 }
 
 // GetConfigWithOverwriteDefault get default config overrides config file
-func (i *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
-	c, err := i.GetConfig(notFoundAsErr)
+func (c *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
+	conf, err := c.GetConfig(notFoundAsErr)
 	if err != nil {
 		return nil, err
 	}
@@ -99,12 +101,12 @@ func (i *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Conf
 		return nil, err
 	}
 
-	return defaultC.Overwrite(c), nil
+	return defaultC.Overwrite(conf), nil
 }
 
 // Write write config file if file exists
-func (i *client) Write() error {
-	if err := i.viper.WriteConfig(); err != nil {
+func (c *client) Write() error {
+	if err := c.viper.WriteConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("config err: %w", err)
 		} else {
@@ -115,42 +117,42 @@ func (i *client) Write() error {
 }
 
 // Create create config file if file does not exists
-func (i *client) Create() error {
-	if err := os.MkdirAll(AbsolutePath(i.DirPath), 0755); err != nil {
+func (c *client) Create() error {
+	if err := os.MkdirAll(AbsolutePath(c.DirPath), 0755); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
-	if err := i.viper.SafeWriteConfig(); err != nil {
+	if err := c.viper.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	return nil
 }
 
 // WriteOrCreate create config file and directory if file or directory does not exists
-func (i *client) WriteOrCreate() error {
-	if err := i.Write(); err != nil {
+func (c *client) WriteOrCreate() error {
+	if err := c.Write(); err != nil {
 		if !IsErrNotFound(err) {
 			return err
 		}
-		if err := i.Create(); err != nil {
+		if err := c.Create(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (i *client) Set(key string, value interface{}) {
-	i.viper.Set(key, value)
+func (c *client) Set(key string, value interface{}) {
+	c.viper.Set(key, value)
 }
 
-func (i *client) CopyConfigTo(to *client) error {
-	c, err := i.GetConfig(true)
+func (c *client) CopyConfigTo(to *client) error {
+	conf, err := c.GetConfig(true)
 	if err != nil {
 		return err
 	}
 
-	to.Set("general.working_directory", c.General.WorkingDirectory)
-	to.Set("todo.file_name", c.Todo.FileName)
-	to.Set("todo.timeout", c.Todo.Timeout)
+	to.Set("general.working_directory", conf.General.WorkingDirectory)
+	to.Set("todo.file_name", conf.Todo.FileName)
+	to.Set("todo.timeout", conf.Todo.Timeout)
 
 	return nil
 }
@@ -174,5 +176,21 @@ func AppendLine(target *client, line string) error {
 	if _, err := fmt.Fprintln(fp, line); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *client) Open() error {
+	fp, err := os.Open(AbsolutePath(c.FullPath))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fp.Close()
+
+	data, err := ioutil.ReadAll(fp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(data))
 	return nil
 }

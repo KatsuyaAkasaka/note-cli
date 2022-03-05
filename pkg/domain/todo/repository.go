@@ -8,7 +8,7 @@ type Repository interface {
 	Create(ctx context.Context, t *Todo) (*Todo, error)
 	Update(ctx context.Context, t *Todo) (*Todo, error)
 	SetDone(ctx context.Context, params *SetDoneParams) (*Todo, error)
-	List(ctx context.Context, params *ListParams) (*Todo, error)
+	List(ctx context.Context, params *ListParams) (Todos, error)
 	Delete(ctx context.Context, params *DeleteParams) (*Todo, error)
 }
 

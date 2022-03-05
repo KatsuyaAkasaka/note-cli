@@ -16,12 +16,13 @@ type TodoCommand struct {
 func (c *TodoCommand) Cmd() *cobra.Command {
 	var todoCmd = &cobra.Command{
 		Use:   "todo",
-		Short: "todo list command",
+		Short: "todo management command",
 		Long:  ``,
 	}
 	a := adapter.NewTodoAdatper(c.Repositories, c.Config)
 	todoCmd.AddCommand(
 		a.Add(),
+		a.List(),
 	)
 	return todoCmd
 }

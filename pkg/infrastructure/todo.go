@@ -13,8 +13,8 @@ type todoRepository struct {
 }
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
-	todoIO := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, "md")
-	if err := io.AppendLine(todoIO, t.ToCheckMarkdown()); err != nil {
+	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
+	if err := io.AppendLine(todoClient, t.ToContent(todo.FileTypeMarkdown)); err != nil {
 		return nil, err
 	}
 	return t, nil
@@ -25,7 +25,11 @@ func (r *todoRepository) Update(ctx context.Context, t *todo.Todo) (*todo.Todo, 
 func (r *todoRepository) SetDone(ctx context.Context, params *todo.SetDoneParams) (*todo.Todo, error) {
 	return nil, nil
 }
-func (r *todoRepository) List(ctx context.Context, params *todo.ListParams) (*todo.Todo, error) {
+func (r *todoRepository) List(ctx context.Context, params *todo.ListParams) (todo.Todos, error) {
+	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
+	if err := todoClient.Open(); err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 func (r *todoRepository) Delete(ctx context.Context, params *todo.DeleteParams) (*todo.Todo, error) {
