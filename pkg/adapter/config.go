@@ -9,14 +9,14 @@ import (
 
 type Config struct {
 	Usecase usecase.Config
-	Config  *config.Config
+	Option  *Option
 }
 
 func (a *Config) Initialize() *cobra.Command {
 	c := &Command{
 		Command: "init",
 		Desc:    "initialize config",
-		Option:  NewOption().Apply(KindConfig, a.Config),
+		Option:  a.Option,
 		Aliases: []string{"ini"},
 		Exec:    a.Usecase.Init,
 	}
@@ -27,7 +27,7 @@ func (a *Config) Reset() *cobra.Command {
 	c := &Command{
 		Command: "reset",
 		Desc:    "reset config",
-		Option:  NewOption().Apply(KindConfig, a.Config),
+		Option:  a.Option,
 		Aliases: []string{"ini"},
 		Exec:    a.Usecase.Reset,
 	}
@@ -38,7 +38,7 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 	c := &Command{
 		Command: "set-path",
 		Desc:    "set store path",
-		Option:  NewOption().Apply(KindConfig, a.Config),
+		Option:  a.Option,
 		Aliases: []string{"sp"},
 		Exec:    a.Usecase.SetPath,
 		SetFlags: func(cmd *cobra.Command) {
@@ -53,16 +53,9 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 	return c.ToCobraCommand()
 }
 
-func NewConfigAdatper(r *domain.Repositories) *Config {
-	config, err := r.ConfigRepository.Get(&config.ConfigGetParams{
-		Overwrite:     true,
-		NotFoundAsErr: false,
-	})
-	if err != nil {
-		return nil
-	}
+func NewConfigAdatper(r *domain.Repositories, c *config.Config) *Config {
 	return &Config{
 		Usecase: usecase.NewConfigUsecase(r),
-		Config:  config,
+		Option:  NewOption().Apply(KindTodo, c),
 	}
 }

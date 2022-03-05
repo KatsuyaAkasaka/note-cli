@@ -9,7 +9,7 @@ import (
 
 type Todo struct {
 	Usecase usecase.Todo
-	Config  *config.Config
+	Option  *Option
 }
 
 func (a *Todo) Add() *cobra.Command {
@@ -18,7 +18,7 @@ func (a *Todo) Add() *cobra.Command {
 		Desc:    "add todo list",
 		Exec:    a.Usecase.Add,
 		Args:    cobra.ExactArgs(1),
-		Option:  NewOption().Apply(KindTodo, a.Config),
+		Option:  a.Option,
 		SetFlags: func(cmd *cobra.Command) {
 			cmd.Flags().BoolP(
 				"done",
@@ -31,16 +31,9 @@ func (a *Todo) Add() *cobra.Command {
 	return c.ToCobraCommand()
 }
 
-func NewTodoAdatper(r *domain.Repositories) *Todo {
-	config, err := r.ConfigRepository.Get(&config.ConfigGetParams{
-		Overwrite:     true,
-		NotFoundAsErr: false,
-	})
-	if err != nil {
-		return nil
-	}
+func NewTodoAdatper(r *domain.Repositories, c *config.Config) *Todo {
 	return &Todo{
 		Usecase: usecase.NewTodoUsecase(r),
-		Config:  config,
+		Option:  NewOption().Apply(KindTodo, c),
 	}
 }

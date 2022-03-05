@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/KatsuyaAkasaka/nt/pkg/domain"
+	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/KatsuyaAkasaka/nt/pkg/infrastructure"
 	"github.com/spf13/cobra"
 )
@@ -22,14 +23,21 @@ type Commands interface {
 }
 
 func Cmd() *cobra.Command {
+	config, err := infrastructure.NewConfigRepository().Get(&config.ConfigGetParams{
+		Overwrite:     true,
+		NotFoundAsErr: false,
+	})
+	if err != nil {
+		return nil
+	}
 	rs := domain.NewRepository(
-		infrastructure.NewTodoRepository(),
+		infrastructure.NewTodoRepository(config),
 		infrastructure.NewConfigRepository(),
 		infrastructure.NewUUIDRepository(),
 	)
 	commands := []Commands{
-		NewTodoCommand(rs),
-		NewConfigCommand(rs),
+		NewTodoCommand(rs, config),
+		NewConfigCommand(rs, config),
 	}
 	for i := range commands {
 		cmd.AddCommand(commands[i].Cmd())

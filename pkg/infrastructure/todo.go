@@ -3,11 +3,14 @@ package infrastructure
 import (
 	"context"
 
+	"github.com/KatsuyaAkasaka/nt/pkg/domain/config"
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/todo"
 	"github.com/KatsuyaAkasaka/nt/pkg/infrastructure/io"
 )
 
-type todoRepository struct{}
+type todoRepository struct {
+	Config *config.Config
+}
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
 	c, err := io.ConfigClient().GetConfigWithOverwriteDefault(true)
@@ -33,6 +36,8 @@ func (r *todoRepository) Delete(ctx context.Context, params *todo.DeleteParams) 
 	return nil, nil
 }
 
-func NewTodoRepository() todo.Repository {
-	return &todoRepository{}
+func NewTodoRepository(c *config.Config) todo.Repository {
+	return &todoRepository{
+		Config: c,
+	}
 }
