@@ -14,7 +14,7 @@ type todoRepository struct {
 
 func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
 	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
-	if err := io.AppendLine(todoClient, t.ToContent(todo.FileTypeMarkdown)); err != nil {
+	if err := io.AppendLine(todoClient, t.ToLine(todo.FileTypeMarkdown)); err != nil {
 		return nil, err
 	}
 	return t, nil

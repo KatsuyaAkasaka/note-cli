@@ -14,10 +14,10 @@ const (
 	FileTypeMarkdown FileType = "md"
 )
 
-func (t *Todo) ToContent(fileType FileType) string {
+func (t *Todo) ToLine(fileType FileType) string {
 	switch fileType {
 	case FileTypeMarkdown:
-		return FormatMD.Content(t)
+		return FormatMD.ToLine(t)
 	}
 	return t.Content
 }

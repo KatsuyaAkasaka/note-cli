@@ -1,48 +1,52 @@
 package todo
 
-import "strings"
+import (
+	"strings"
+)
 
 const (
 	donePrefix  = "- [x] "
 	doingPrefix = "- [ ] "
+	Delimiter   = " : "
 )
 
 type markdown struct{}
 
-func (m *markdown) Content(t *Todo) string {
+func (m *markdown) ToLine(t *Todo) string {
 	prefix := ""
 	if t.Done {
 		prefix = donePrefix
 	} else {
 		prefix = doingPrefix
 	}
-	return prefix + t.Content
+	return prefix + t.ID + Delimiter + t.Content
 }
 
-func (m *markdown) ContentAll(ts Todos) []string {
+func (m *markdown) ToLineAll(ts Todos) []string {
 	dst := make([]string, len(ts))
 	for i := range ts {
-		dst[i] = m.Content(ts[i])
+		dst[i] = m.ToLine(ts[i])
 	}
 	return dst
 }
 
 func (m *markdown) Parse(content string) *Todo {
+	contentWithID := ""
+	done := false
 	if strings.HasPrefix(content, donePrefix) {
-		return &Todo{
-			ID:      "",
-			Content: strings.Replace(content, donePrefix, "", 1),
-			Done:    true,
-		}
+		contentWithID = strings.Replace(content, donePrefix, "", 1)
+		done = true
 	}
 	if strings.HasPrefix(content, doingPrefix) {
-		return &Todo{
-			ID:      "",
-			Content: strings.Replace(content, doingPrefix, "", 1),
-			Done:    false,
-		}
+		contentWithID = strings.Replace(content, doingPrefix, "", 1)
+		done = false
 	}
-	return &Todo{}
+	s := strings.Split(contentWithID, Delimiter)
+	return &Todo{
+		ID:      s[0],
+		Content: strings.Join(s[1:], Delimiter),
+		Done:    done,
+	}
 }
 
 func (m *markdown) ParseAll(contents []string) Todos {
