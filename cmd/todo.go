@@ -23,6 +23,7 @@ func (c *TodoCommand) Cmd() *cobra.Command {
 	todoCmd.AddCommand(
 		a.Add(),
 		a.List(),
+		a.Switch(),
 	)
 	return todoCmd
 }

@@ -169,13 +169,26 @@ func Exists(path string) error {
 	return nil
 }
 
-func AppendLine(target *client, line string) error {
-	fp, err := os.OpenFile(utils.AbsolutePath(target.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
+func (c *client) AppendLine(line string) error {
+	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		return err
 	}
 	defer fp.Close()
 	if _, err := fmt.Fprintln(fp, line); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *client) ReplaceAll(lines []string) error {
+	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0755)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	inputText := strings.Join(lines, "\n")
+	if _, err := fmt.Fprintln(fp, inputText); err != nil {
 		return err
 	}
 	return nil
@@ -193,5 +206,12 @@ func (c *client) ReadAll() ([]string, error) {
 		log.Fatal(err)
 	}
 
-	return strings.Split(string(data), "\n"), nil
+	contents := strings.Split(string(data), "\n")
+	filteredContents := []string{}
+	for i := range contents {
+		if contents[i] != "" {
+			filteredContents = append(filteredContents, contents[i])
+		}
+	}
+	return filteredContents, nil
 }

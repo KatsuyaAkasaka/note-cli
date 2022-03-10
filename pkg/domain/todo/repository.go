@@ -5,6 +5,7 @@ import (
 )
 
 type Repository interface {
+	Get(ctx context.Context, params *GetParams) (*Todo, error)
 	Create(ctx context.Context, t *Todo) (*Todo, error)
 	Update(ctx context.Context, t *Todo) (*Todo, error)
 	SetDone(ctx context.Context, params *SetDoneParams) (*Todo, error)
@@ -12,12 +13,17 @@ type Repository interface {
 	Delete(ctx context.Context, params *DeleteParams) (*Todo, error)
 }
 
+type GetParams struct {
+	ID string
+}
+
 type DeleteParams struct {
 	ID string
 }
 
 type SetDoneParams struct {
-	ID string
+	ID   string
+	Done bool
 }
 
 type ListParams struct {

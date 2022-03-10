@@ -20,6 +20,7 @@ func (a *Todo) Add() *cobra.Command {
 	c := &Command{
 		Command: "add",
 		Desc:    "add todo list",
+		Aliases: []string{"a"},
 		Exec:    a.Usecase.Add,
 		Args:    cobra.ExactArgs(1),
 		Option:  a.Option,
@@ -39,12 +40,34 @@ func (a *Todo) List() *cobra.Command {
 	c := &Command{
 		Command: "list",
 		Desc:    "list todos",
-		Aliases: []string{"l"},
+		Aliases: []string{"l", "ls"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 			todos, err := a.Usecase.List(ctx, flags, args)
 			output := marshaler.TodosToOutput(todos)
 			Outputs(output)
 			return err
+		},
+		Option: a.Option,
+	}
+	return c.ToCobraCommand()
+}
+
+func (a *Todo) Switch() *cobra.Command {
+	c := &Command{
+		Command: "switch",
+		Desc:    "switch todo done",
+		Aliases: []string{"s", "sw"},
+		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+			_, err := a.Usecase.Switch(ctx, flags, args)
+			return err
+		},
+		SetFlags: func(cmd *cobra.Command) {
+			cmd.Flags().StringP(
+				"id",
+				"i",
+				"",
+				"switch done flag id",
+			)
 		},
 		Option: a.Option,
 	}

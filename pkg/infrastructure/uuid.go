@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/uuid"
 )
@@ -15,6 +16,7 @@ const (
 )
 
 func (r *uuidRepository) Gen() string {
+	rand.Seed(time.Now().UnixNano())
 
 	src := make([]byte, 1)
 	buf := make([]byte, uuidLen)

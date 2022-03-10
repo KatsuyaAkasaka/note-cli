@@ -35,3 +35,25 @@ func (ts Todos) FilterBy(filter func(t *Todo) bool) Todos {
 	}
 	return dst
 }
+
+func (ts Todos) Replace(t *Todo) Todos {
+	for i := range ts {
+		if ts[i].ID == t.ID {
+			ts[i] = t
+		}
+	}
+	return ts
+}
+
+func (ts Todos) ToLine(fileType FileType) []string {
+	dst := make([]string, len(ts))
+	for i := range ts {
+		switch fileType {
+		case FileTypeMarkdown:
+			dst[i] = FormatMD.ToLine(ts[i])
+		default:
+			dst[i] = ts[i].Content
+		}
+	}
+	return dst
+}
