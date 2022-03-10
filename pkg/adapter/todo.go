@@ -43,9 +43,21 @@ func (a *Todo) List() *cobra.Command {
 		Aliases: []string{"l", "ls"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 			todos, err := a.Usecase.List(ctx, flags, args)
-			output := marshaler.TodosToOutput(todos)
+			withID, err := flags.GetBool("id")
+			if err != nil {
+				return err
+			}
+			output := marshaler.TodosToOutput(todos, withID)
 			Outputs(output)
 			return err
+		},
+		SetFlags: func(cmd *cobra.Command) {
+			cmd.Flags().BoolP(
+				"id",
+				"i",
+				false,
+				"If true, visible id",
+			)
 		},
 		Option: a.Option,
 	}
