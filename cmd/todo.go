@@ -24,6 +24,7 @@ func (c *TodoCommand) Cmd() *cobra.Command {
 		a.Add(),
 		a.List(),
 		a.Switch(),
+		a.Delete(),
 	)
 	return todoCmd
 }

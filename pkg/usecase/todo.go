@@ -13,6 +13,7 @@ type Todo interface {
 	Add(ctx context.Context, flags *pflag.FlagSet, params *AddParams) (*todo.Todo, error)
 	List(ctx context.Context, flags *pflag.FlagSet, params *ListParams) (todo.Todos, error)
 	Switch(ctx context.Context, flags *pflag.FlagSet, params *SwitchParams) (*todo.Todo, error)
+	Delete(ctx context.Context, flags *pflag.FlagSet, params *DeleteParams) (*todo.Todo, error)
 }
 
 type TodoUsecase struct {
@@ -58,9 +59,33 @@ func (u *TodoUsecase) Switch(ctx context.Context, flags *pflag.FlagSet, params *
 	t, err := u.Repositories.TodoRepository.Get(ctx, &todo.GetParams{
 		ID: params.ID,
 	})
+	if err != nil {
+		return nil, err
+	}
 	t, err = u.Repositories.TodoRepository.SetDone(ctx, &todo.SetDoneParams{
 		ID:   params.ID,
 		Done: !t.Done,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+type DeleteParams struct {
+	ID   string
+	Args []string
+}
+
+func (u *TodoUsecase) Delete(ctx context.Context, flags *pflag.FlagSet, params *DeleteParams) (*todo.Todo, error) {
+	t, err := u.Repositories.TodoRepository.Get(ctx, &todo.GetParams{
+		ID: params.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	t, err = u.Repositories.TodoRepository.Delete(ctx, &todo.DeleteParams{
+		ID: params.ID,
 	})
 	if err != nil {
 		return nil, err

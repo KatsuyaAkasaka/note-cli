@@ -119,6 +119,33 @@ func (a *Todo) Switch() *cobra.Command {
 	return c.ToCobraCommand()
 }
 
+func (a *Todo) Delete() *cobra.Command {
+	type params struct {
+		id string
+	}
+	p := &params{}
+
+	c := &Command{
+		Command: "delete",
+		Desc:    "delete todo",
+		Aliases: []string{"d"},
+		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+			return nil
+		},
+		Args:   cobra.ExactArgs(1),
+		Option: a.Option,
+		SetFlags: func(cmd *cobra.Command) {
+			cmd.PersistentFlags().StringVar(
+				&p.id,
+				"id",
+				"",
+				"delete specified id todo",
+			)
+		},
+	}
+	return c.ToCobraCommand()
+}
+
 func NewTodoAdatper(r *domain.Repositories, c *config.Config) *Todo {
 	return &Todo{
 		Usecase: usecase.NewTodoUsecase(r),
