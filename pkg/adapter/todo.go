@@ -17,15 +17,29 @@ type Todo struct {
 }
 
 func (a *Todo) Add() *cobra.Command {
+	type params struct {
+		done bool
+	}
+	p := &params{}
+
 	c := &Command{
 		Command: "add",
 		Desc:    "add todo list",
 		Aliases: []string{"a"},
-		Exec:    a.Usecase.Add,
-		Args:    cobra.ExactArgs(1),
-		Option:  a.Option,
+		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+			if _, err := a.Usecase.Add(ctx, flags, &usecase.AddParams{
+				Done: p.done,
+				Args: args,
+			}); err != nil {
+				return err
+			}
+			return nil
+		},
+		Args:   cobra.ExactArgs(1),
+		Option: a.Option,
 		SetFlags: func(cmd *cobra.Command) {
-			cmd.Flags().BoolP(
+			cmd.PersistentFlags().BoolVarP(
+				&p.done,
 				"done",
 				"d",
 				false,
@@ -37,24 +51,33 @@ func (a *Todo) Add() *cobra.Command {
 }
 
 func (a *Todo) List() *cobra.Command {
+	type params struct {
+		WithID bool
+	}
+	p := &params{}
+
 	c := &Command{
 		Command: "list",
 		Desc:    "list todos",
 		Aliases: []string{"l", "ls"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
-			todos, err := a.Usecase.List(ctx, flags, args)
-			withID, err := flags.GetBool("id")
+			todos, err := a.Usecase.List(ctx, flags, &usecase.ListParams{
+				Args: args,
+			})
 			if err != nil {
 				return err
 			}
-			output := marshaler.TodosToOutput(todos, withID)
-			Outputs(output)
-			return err
+
+			outputStrs := marshaler.OutputTodos(todos, &marshaler.OutputTodosParams{
+				WithID: p.WithID,
+			})
+			Outputs(outputStrs)
+			return nil
 		},
 		SetFlags: func(cmd *cobra.Command) {
-			cmd.Flags().BoolP(
+			cmd.PersistentFlags().BoolVar(
+				&p.WithID,
 				"id",
-				"i",
 				false,
 				"If true, visible id",
 			)
@@ -65,18 +88,28 @@ func (a *Todo) List() *cobra.Command {
 }
 
 func (a *Todo) Switch() *cobra.Command {
+	type params struct {
+		id string
+	}
+	p := &params{}
+
 	c := &Command{
 		Command: "switch",
 		Desc:    "switch todo done",
 		Aliases: []string{"s", "sw"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
-			_, err := a.Usecase.Switch(ctx, flags, args)
-			return err
+			if _, err := a.Usecase.Switch(ctx, flags, &usecase.SwitchParams{
+				ID:   p.id,
+				Args: args,
+			}); err != nil {
+				return err
+			}
+			return nil
 		},
 		SetFlags: func(cmd *cobra.Command) {
-			cmd.Flags().StringP(
+			cmd.PersistentFlags().StringVar(
+				&p.id,
 				"id",
-				"i",
 				"",
 				"switch done flag id",
 			)

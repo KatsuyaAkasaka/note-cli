@@ -10,33 +10,38 @@ import (
 )
 
 type Todo interface {
-	Add(ctx context.Context, flags *pflag.FlagSet, args []string) error
-	List(ctx context.Context, flags *pflag.FlagSet, args []string) (todo.Todos, error)
-	Switch(ctx context.Context, flags *pflag.FlagSet, args []string) (*todo.Todo, error)
+	Add(ctx context.Context, flags *pflag.FlagSet, params *AddParams) (*todo.Todo, error)
+	List(ctx context.Context, flags *pflag.FlagSet, params *ListParams) (todo.Todos, error)
+	Switch(ctx context.Context, flags *pflag.FlagSet, params *SwitchParams) (*todo.Todo, error)
 }
 
 type TodoUsecase struct {
 	Repositories *domain.Repositories
 }
 
-func (u *TodoUsecase) Add(ctx context.Context, flags *pflag.FlagSet, args []string) error {
-	done, err := flags.GetBool("done")
-	if err != nil {
-		return err
-	}
-	t := &todo.Todo{
-		ID:      u.Repositories.UUID.Gen(),
-		Content: strings.Join(args, " "),
-		Done:    done,
-	}
-	t, err = u.Repositories.TodoRepository.Create(ctx, t)
-	if err != nil {
-		return err
-	}
-	return nil
+type AddParams struct {
+	Done bool
+	Args []string
 }
 
-func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, args []string) (todo.Todos, error) {
+func (u *TodoUsecase) Add(ctx context.Context, flags *pflag.FlagSet, params *AddParams) (*todo.Todo, error) {
+	t := &todo.Todo{
+		ID:      u.Repositories.UUID.Gen(),
+		Content: strings.Join(params.Args, " "),
+		Done:    params.Done,
+	}
+	t, err := u.Repositories.TodoRepository.Create(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+type ListParams struct {
+	Args []string
+}
+
+func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, params *ListParams) (todo.Todos, error) {
 	todos, err := u.Repositories.TodoRepository.List(ctx, &todo.ListParams{})
 	if err != nil {
 		return nil, err
@@ -44,16 +49,17 @@ func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, args []str
 	return todos, nil
 }
 
-func (u *TodoUsecase) Switch(ctx context.Context, flags *pflag.FlagSet, args []string) (*todo.Todo, error) {
-	id, err := flags.GetString("id")
-	if err != nil {
-		return nil, err
-	}
+type SwitchParams struct {
+	ID   string
+	Args []string
+}
+
+func (u *TodoUsecase) Switch(ctx context.Context, flags *pflag.FlagSet, params *SwitchParams) (*todo.Todo, error) {
 	t, err := u.Repositories.TodoRepository.Get(ctx, &todo.GetParams{
-		ID: id,
+		ID: params.ID,
 	})
 	t, err = u.Repositories.TodoRepository.SetDone(ctx, &todo.SetDoneParams{
-		ID:   id,
+		ID:   params.ID,
 		Done: !t.Done,
 	})
 	if err != nil {

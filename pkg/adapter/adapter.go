@@ -36,6 +36,7 @@ func (o *Option) Apply(i Kind, c *config.Config) *Option {
 	return o
 }
 
+// Command command
 type Command struct {
 	Command  string
 	Desc     string

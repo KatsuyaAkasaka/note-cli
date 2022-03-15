@@ -16,10 +16,14 @@ func TodoToOutput(t *todo.Todo, withID bool) string {
 	}
 }
 
-func TodosToOutput(ts todo.Todos, withID bool) []string {
+type OutputTodosParams struct {
+	WithID bool
+}
+
+func OutputTodos(ts todo.Todos, params *OutputTodosParams) []string {
 	dst := make([]string, len(ts))
 	for i := range ts {
-		dst[i] = TodoToOutput(ts[i], withID)
+		dst[i] = TodoToOutput(ts[i], params.WithID)
 	}
 	return dst
 }
