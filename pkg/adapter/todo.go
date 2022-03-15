@@ -128,11 +128,16 @@ func (a *Todo) Delete() *cobra.Command {
 	c := &Command{
 		Command: "delete",
 		Desc:    "delete todo",
-		Aliases: []string{"d"},
+		Aliases: []string{"d", "del"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
+			if _, err := a.Usecase.Delete(ctx, flags, &usecase.DeleteParams{
+				ID:   p.id,
+				Args: args,
+			}); err != nil {
+				return err
+			}
 			return nil
 		},
-		Args:   cobra.ExactArgs(1),
 		Option: a.Option,
 		SetFlags: func(cmd *cobra.Command) {
 			cmd.PersistentFlags().StringVar(
