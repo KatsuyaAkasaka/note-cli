@@ -17,10 +17,10 @@ type Config struct {
 
 func (a *Config) Initialize() *cobra.Command {
 	c := &Command{
-		Command: "init",
+		Command: "initialize",
 		Desc:    "initialize config",
 		Option:  a.Option,
-		Aliases: []string{"ini"},
+		Aliases: []string{"init"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 			if err := a.Usecase.Init(ctx, flags, &usecase.InitParams{
 				Args: args,
@@ -38,7 +38,7 @@ func (a *Config) Reset() *cobra.Command {
 		Command: "reset",
 		Desc:    "reset config",
 		Option:  a.Option,
-		Aliases: []string{"ini"},
+		Aliases: []string{"res"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 			if err := a.Usecase.Reset(ctx, flags, &usecase.ResetParams{
 				Args: args,
