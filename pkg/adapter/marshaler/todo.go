@@ -4,15 +4,17 @@ import (
 	"github.com/KatsuyaAkasaka/nt/pkg/domain/todo"
 )
 
+const todoDelimiter = " : "
+
 func TodoToOutput(t *todo.Todo, withID bool) string {
 	content := t.Content
 	if withID {
-		content = t.ID + " : " + content
+		content = t.ID + todoDelimiter + content
 	}
 	if t.Done {
-		return "✅ " + content
+		return "✅" + todoDelimiter + content
 	} else {
-		return "✍️  " + content
+		return "✍️ " + todoDelimiter + content
 	}
 }
 
