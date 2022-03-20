@@ -1,0 +1,66 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  -
+    main: ./cmd
+    env:
+      - CGO_ENABLED=0
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+brews:
+  -
+    # Name template of the recipe
+    # Default to project name
+    name: note-cli
+
+    # Github repository to push the tap to.
+    tap:
+      owner: KatsuyaAkasaka
+      name: homebrew-tap
+
+      # Optionally a branch can be provided.
+      # Defaults to the default repository branch.
+      branch: main
+
+      # Optionally a token can be provided, if it differs from the token provided to GoReleaser
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+
+    # Template for the url which is determined by the given Token (github or gitlab)
+    # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
+    url_template: "https://github.com/KatsuyaAkasaka/note-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Git author used to commit to the repository.
+    # Defaults are shown.
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@carlosbecker.com
+
+    # Your app's homepage.
+    # Default is empty.
+    homepage: "https://github.com/KatsuyaAkasaka"
+
+    # Your app's description.
+    # Default is empty.
+    description: "note-cli"
+
+    # Custom install script for brew.
+    # Default is 'bin.install "program"'.
+    install: |
+      bin.install "note-cli"
