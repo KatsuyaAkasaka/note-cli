@@ -91,29 +91,19 @@ func (a *Todo) Switch() *cobra.Command {
 	type params struct {
 		id string
 	}
-	p := &params{}
-
 	c := &Command{
 		Command: "switch",
 		Desc:    "switch todo done",
 		Aliases: []string{"s", "sw"},
 		Exec: func(ctx context.Context, flags *pflag.FlagSet, args []string) error {
 			if _, err := a.Usecase.Switch(ctx, flags, &usecase.SwitchParams{
-				ID:   p.id,
 				Args: args,
 			}); err != nil {
 				return err
 			}
 			return nil
 		},
-		SetFlags: func(cmd *cobra.Command) {
-			cmd.PersistentFlags().StringVar(
-				&p.id,
-				"id",
-				"",
-				"switch done flag id",
-			)
-		},
+		Args:   cobra.ExactArgs(1),
 		Option: a.Option,
 	}
 	return c.ToCobraCommand()

@@ -51,19 +51,18 @@ func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, params *Li
 }
 
 type SwitchParams struct {
-	ID   string
 	Args []string
 }
 
 func (u *TodoUsecase) Switch(ctx context.Context, flags *pflag.FlagSet, params *SwitchParams) (*todo.Todo, error) {
 	t, err := u.Repositories.TodoRepository.Get(ctx, &todo.GetParams{
-		ID: params.ID,
+		ID: params.Args[0],
 	})
 	if err != nil {
 		return nil, err
 	}
 	t, err = u.Repositories.TodoRepository.SetDone(ctx, &todo.SetDoneParams{
-		ID:   params.ID,
+		ID:   params.Args[0],
 		Done: !t.Done,
 	})
 	if err != nil {
