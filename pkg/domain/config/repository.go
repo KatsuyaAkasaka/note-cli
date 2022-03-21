@@ -1,13 +1,13 @@
 package config
 
 type Repository interface {
-	Get(params *ConfigGetParams) (*Config, error)
+	Get(params *GetParams) (*Config, error)
 	Initialize() (*Config, error)
 	Reset() error
 	SetWorkindDirectory(path string) error
 }
 
-type ConfigGetParams struct {
+type GetParams struct {
 	Overwrite     bool
 	NotFoundAsErr bool
 }

@@ -2,15 +2,16 @@ package io
 
 import "errors"
 
-type ErrNotFound struct {
+type NotFoundError struct {
 	Err error
 }
 
-func (e *ErrNotFound) Error() string {
+func (e *NotFoundError) Error() string {
 	return e.Err.Error()
 }
 
 func IsErrNotFound(err error) bool {
-	var nerr *ErrNotFound
+	var nerr *NotFoundError
+
 	return errors.As(err, &nerr)
 }

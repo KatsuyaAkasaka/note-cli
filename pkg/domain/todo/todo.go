@@ -15,10 +15,11 @@ const (
 )
 
 func (t *Todo) ToLine(fileType FileType) string {
-	switch fileType {
+	switch fileType { //nolint:gocritic
 	case FileTypeMarkdown:
 		return FormatMD.ToLine(t)
 	}
+
 	return t.Content
 }
 
@@ -33,6 +34,7 @@ func (ts Todos) FilterBy(filter func(t *Todo) bool) Todos {
 			dst = append(dst, ts[i])
 		}
 	}
+
 	return dst
 }
 
@@ -42,6 +44,7 @@ func (ts Todos) Replace(t *Todo) Todos {
 			ts[i] = t
 		}
 	}
+
 	return ts
 }
 
@@ -55,5 +58,6 @@ func (ts Todos) ToLine(fileType FileType) []string {
 			dst[i] = ts[i].Content
 		}
 	}
+
 	return dst
 }

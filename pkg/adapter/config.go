@@ -16,7 +16,7 @@ type Config struct {
 }
 
 func (a *Config) Initialize() *cobra.Command {
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "initialize",
 		Desc:    "initialize config",
 		Option:  a.Option,
@@ -27,14 +27,16 @@ func (a *Config) Initialize() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 	}
+
 	return c.ToCobraCommand()
 }
 
 func (a *Config) Reset() *cobra.Command {
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "reset",
 		Desc:    "reset config",
 		Option:  a.Option,
@@ -45,9 +47,11 @@ func (a *Config) Reset() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 	}
+
 	return c.ToCobraCommand()
 }
 
@@ -55,9 +59,11 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 	type params struct {
 		path string
 	}
-	p := &params{}
+	p := &params{
+		path: "",
+	}
 
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "set-path",
 		Desc:    "set store path",
 		Option:  a.Option,
@@ -69,6 +75,7 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 		SetFlags: func(cmd *cobra.Command) {
@@ -81,6 +88,7 @@ func (a *Config) SetWorkingDirectory() *cobra.Command {
 			)
 		},
 	}
+
 	return c.ToCobraCommand()
 }
 

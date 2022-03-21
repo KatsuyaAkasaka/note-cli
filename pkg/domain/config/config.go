@@ -24,5 +24,6 @@ func (c *Config) Overwrite(to *Config) *Config {
 	if to.Todo.Timeout != 0 {
 		c.Todo.Timeout = to.Todo.Timeout
 	}
+
 	return c
 }

@@ -12,9 +12,9 @@ type TodoCommand struct {
 	Config       *config.Config
 }
 
-// Cmd todo command
+// Cmd todo command.
 func (c *TodoCommand) Cmd() *cobra.Command {
-	var todoCmd = &cobra.Command{
+	todoCmd := &cobra.Command{ //nolint:exhaustivestruct
 		Use:   "todo",
 		Short: "todo management command",
 		Long:  ``,
@@ -26,6 +26,7 @@ func (c *TodoCommand) Cmd() *cobra.Command {
 		a.Switch(),
 		a.Delete(),
 	)
+
 	return todoCmd
 }
 

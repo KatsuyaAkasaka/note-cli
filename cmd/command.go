@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cmd = &cobra.Command{
+var cmd = &cobra.Command{ //nolint:exhaustivestruct
 	Use:   "nt",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
@@ -23,7 +23,7 @@ type Commands interface {
 }
 
 func Cmd() *cobra.Command {
-	config, err := infrastructure.NewConfigRepository().Get(&config.ConfigGetParams{
+	config, err := infrastructure.NewConfigRepository().Get(&config.GetParams{
 		Overwrite:     true,
 		NotFoundAsErr: false,
 	})
@@ -42,5 +42,6 @@ func Cmd() *cobra.Command {
 	for i := range commands {
 		cmd.AddCommand(commands[i].Cmd())
 	}
+
 	return cmd
 }

@@ -35,6 +35,7 @@ func (u *TodoUsecase) Add(ctx context.Context, flags *pflag.FlagSet, params *Add
 	if err != nil {
 		return nil, err
 	}
+
 	return t, nil
 }
 
@@ -47,6 +48,7 @@ func (u *TodoUsecase) List(ctx context.Context, flags *pflag.FlagSet, params *Li
 	if err != nil {
 		return nil, err
 	}
+
 	return todos, nil
 }
 
@@ -68,6 +70,7 @@ func (u *TodoUsecase) Switch(ctx context.Context, flags *pflag.FlagSet, params *
 	if err != nil {
 		return nil, err
 	}
+
 	return t, nil
 }
 
@@ -84,11 +87,12 @@ func (u *TodoUsecase) Delete(ctx context.Context, flags *pflag.FlagSet, params *
 		return nil, err
 	}
 	t, err = u.Repositories.TodoRepository.Delete(ctx, &todo.DeleteParams{
-		ID: params.ID,
+		ID: t.ID,
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return t, nil
 }
 

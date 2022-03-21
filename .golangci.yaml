@@ -22,4 +22,5 @@ linters:
     - varnamelen # 変数の文字数チェックするルール
     - wrapcheck # errorのwrapをしてるかチェックするルール
     - wsl # gofmt で同じ検査ができるため無効化
+    - forbidigo #FIXME
 

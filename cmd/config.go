@@ -12,9 +12,9 @@ type ConfigCommand struct {
 	Config       *config.Config
 }
 
-// Cmd config command
+// Cmd config command.
 func (c *ConfigCommand) Cmd() *cobra.Command {
-	var configCmd = &cobra.Command{
+	configCmd := &cobra.Command{ //nolint:exhaustivestruct
 		Use:   "config",
 		Short: "config command",
 		Long:  ``,
@@ -25,6 +25,7 @@ func (c *ConfigCommand) Cmd() *cobra.Command {
 		a.Reset(),
 		a.SetWorkingDirectory(),
 	)
+
 	return configCmd
 }
 

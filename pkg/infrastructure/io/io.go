@@ -2,8 +2,8 @@ package io
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -13,86 +13,89 @@ import (
 	"github.com/spf13/viper"
 )
 
-type client struct {
+type Client struct {
 	viper    *viper.Viper
 	FullPath string
 	DirPath  string
 }
 
 var (
-	configClient     *client
-	predefinedClient *client
-	defaultClient    *client
+	configClient     *Client
+	predefinedClient *Client
+	defaultClient    *Client
 )
 
-func NewClient(p, name, ext string) *client {
+func NewClient(p, name, ext string) *Client {
 	v := viper.New()
 
 	v.AddConfigPath(p)
 	v.SetConfigName(name)
 	v.SetConfigType(ext)
-	return &client{
+
+	return &Client{
 		viper:    v,
 		FullPath: path.Join(p, name) + "." + ext,
 		DirPath:  p,
 	}
 }
 
-func ConfigClient() *client {
+func ConfigClient() *Client {
 	if configClient == nil {
 		configClient = NewClient("$HOME/.config/note-cli", "config", "yaml")
 	}
+
 	return configClient
 }
 
-func PredefinedClient() *client {
+func PredefinedClient() *Client {
 	if predefinedClient == nil {
 		predefinedClient = NewClient("config", "src", "yaml")
 	}
+
 	return predefinedClient
 }
 
-func DefaultClient() *client {
+func DefaultClient() *Client {
 	if defaultClient == nil {
 		defaultClient = NewClient("config", "default", "yaml")
 	}
+
 	return defaultClient
 }
 
-// Load set config data into client
-func (c *client) Load() error {
+// Load set config data into Client.
+func (c *Client) Load() error {
 	if err := c.viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok { //nolint:errorlint
 			return fmt.Errorf("config err: %w", err)
-		} else {
-			return &ErrNotFound{Err: fmt.Errorf("get err: not found")}
 		}
+
+		return &NotFoundError{Err: fmt.Errorf("get err: not found: %w", err)}
 	}
+
 	return nil
 }
 
-func SetDefault(v *viper.Viper) {
-	v.SetDefault("general.timeout", 5)
-}
-
-// GetConfig get config from config file
-func (c *client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
-	conf := &config.Config{}
+// GetConfig get config from config file.
+func (c *Client) GetConfig(notFoundAsErr bool) (*config.Config, error) {
+	conf := &config.Config{} //nolint:exhaustivestruct
 	if err := c.Load(); err != nil {
 		if IsErrNotFound(err) && !notFoundAsErr {
 			return conf, nil
 		}
+
 		return nil, err
 	}
 
 	if err := c.viper.Unmarshal(conf); err != nil {
 		return nil, fmt.Errorf("config err: %w", err)
 	}
+
 	return conf, nil
 }
 
-// GetConfigWithOverwriteDefault get default config overrides config file
-func (c *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
+// GetConfigWithOverwriteDefault get default config overrides config file.
+func (c *Client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Config, error) {
 	conf, err := c.GetConfig(notFoundAsErr)
 	if err != nil {
 		return nil, err
@@ -106,31 +109,34 @@ func (c *client) GetConfigWithOverwriteDefault(notFoundAsErr bool) (*config.Conf
 	return defaultC.Overwrite(conf), nil
 }
 
-// Write write config file if file exists
-func (c *client) Write() error {
+// Write write config file if file exists.
+func (c *Client) Write() error {
 	if err := c.viper.WriteConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok { //nolint:errorlint
 			return fmt.Errorf("config err: %w", err)
-		} else {
-			return &ErrNotFound{Err: fmt.Errorf("get err: not found")}
 		}
+
+		return &NotFoundError{Err: fmt.Errorf("get err: not found: %w", err)}
 	}
+
 	return nil
 }
 
-// Create create config file if file does not exists
-func (c *client) Create() error {
-	if err := os.MkdirAll(utils.AbsolutePath(c.DirPath), 0755); err != nil {
+// Create create config file if file does not exists.
+func (c *Client) Create() error {
+	var perm fs.FileMode = 0o755
+	if err := os.MkdirAll(utils.AbsolutePath(c.DirPath), perm); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
 	if err := c.viper.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("config err: %w", err)
 	}
+
 	return nil
 }
 
-// WriteOrCreate create config file and directory if file or directory does not exists
-func (c *client) WriteOrCreate() error {
+// WriteOrCreate create config file and directory if file or directory does not exists.
+func (c *Client) WriteOrCreate() error {
 	if err := c.Write(); err != nil {
 		if !IsErrNotFound(err) {
 			return err
@@ -139,14 +145,15 @@ func (c *client) WriteOrCreate() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func (c *client) Set(key string, value interface{}) {
+func (c *Client) Set(key string, value interface{}) {
 	c.viper.Set(key, value)
 }
 
-func (c *client) CopyConfigTo(to *client) error {
+func (c *Client) CopyConfigTo(to *Client) error {
 	conf, err := c.GetConfig(true)
 	if err != nil {
 		return err
@@ -162,15 +169,18 @@ func (c *client) CopyConfigTo(to *client) error {
 func Exists(path string) error {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("directory is not found")
+			return fmt.Errorf("directory is not found: %w", err)
 		}
-		return fmt.Errorf("path is invalid")
+
+		return fmt.Errorf("path is invalid: %w", err)
 	}
+
 	return nil
 }
 
-func (c *client) AppendLine(line string) error {
-	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
+func (c *Client) AppendLine(line string) error {
+	var perm fs.FileMode = 0o755
+	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_WRONLY|os.O_CREATE|os.O_APPEND, perm)
 	if err != nil {
 		return err
 	}
@@ -178,11 +188,13 @@ func (c *client) AppendLine(line string) error {
 	if _, err := fmt.Fprintln(fp, line); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (c *client) ReplaceAll(lines []string) error {
-	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0755)
+func (c *Client) ReplaceAll(lines []string) error {
+	var perm fs.FileMode = 0o755
+	fp, err := os.OpenFile(utils.AbsolutePath(c.FullPath), os.O_RDWR|os.O_APPEND|os.O_TRUNC, perm)
 	if err != nil {
 		return err
 	}
@@ -191,19 +203,20 @@ func (c *client) ReplaceAll(lines []string) error {
 	if _, err := fmt.Fprintln(fp, inputText); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (c *client) ReadAll() ([]string, error) {
+func (c *Client) ReadAll() ([]string, error) {
 	fp, err := os.Open(utils.AbsolutePath(c.FullPath))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer fp.Close()
 
 	data, err := ioutil.ReadAll(fp)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	contents := strings.Split(string(data), "\n")
@@ -213,5 +226,6 @@ func (c *client) ReadAll() ([]string, error) {
 			filteredContents = append(filteredContents, contents[i])
 		}
 	}
+
 	return filteredContents, nil
 }

@@ -13,9 +13,9 @@ func TodoToOutput(t *todo.Todo, withID bool) string {
 	}
 	if t.Done {
 		return "✅" + todoDelimiter + content
-	} else {
-		return "✍️ " + todoDelimiter + content
 	}
+
+	return "✍️ " + todoDelimiter + content
 }
 
 type OutputTodosParams struct {
@@ -27,5 +27,6 @@ func OutputTodos(ts todo.Todos, params *OutputTodosParams) []string {
 	for i := range ts {
 		dst[i] = TodoToOutput(ts[i], params.WithID)
 	}
+
 	return dst
 }

@@ -13,6 +13,8 @@ type todoRepository struct {
 	Config *config.Config
 }
 
+var errNotFound = fmt.Errorf("not found")
+
 func (r *todoRepository) Get(ctx context.Context, params *todo.GetParams) (*todo.Todo, error) {
 	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
 	contents, err := todoClient.ReadAll()
@@ -25,8 +27,9 @@ func (r *todoRepository) Get(ctx context.Context, params *todo.GetParams) (*todo
 		},
 	)
 	if len(todos) < 1 {
-		return nil, fmt.Errorf("not found")
+		return nil, errNotFound
 	}
+
 	return todos[0], nil
 }
 
@@ -35,10 +38,8 @@ func (r *todoRepository) Create(ctx context.Context, t *todo.Todo) (*todo.Todo, 
 	if err := todoClient.AppendLine(t.ToLine(todo.FileTypeMarkdown)); err != nil {
 		return nil, err
 	}
+
 	return t, nil
-}
-func (r *todoRepository) Update(ctx context.Context, t *todo.Todo) (*todo.Todo, error) {
-	return nil, nil
 }
 
 func (r *todoRepository) SetDone(ctx context.Context, params *todo.SetDoneParams) (*todo.Todo, error) {
@@ -54,7 +55,7 @@ func (r *todoRepository) SetDone(ctx context.Context, params *todo.SetDoneParams
 		},
 	)
 	if len(filteredTodos) < 1 {
-		return nil, fmt.Errorf("not found")
+		return nil, errNotFound
 	}
 	targetTodo := filteredTodos[0]
 	targetTodo.Done = params.Done
@@ -66,6 +67,7 @@ func (r *todoRepository) SetDone(ctx context.Context, params *todo.SetDoneParams
 
 	return targetTodo, nil
 }
+
 func (r *todoRepository) List(ctx context.Context, params *todo.ListParams) (todo.Todos, error) {
 	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
 	contents, err := todoClient.ReadAll()
@@ -73,12 +75,14 @@ func (r *todoRepository) List(ctx context.Context, params *todo.ListParams) (tod
 		return nil, err
 	}
 	todos := todo.FormatMD.ParseAll(contents)
+
 	return todos.FilterBy(
 		func(t *todo.Todo) bool {
 			return t.Content != ""
 		},
 	), nil
 }
+
 func (r *todoRepository) Delete(ctx context.Context, params *todo.DeleteParams) (*todo.Todo, error) {
 	todoClient := io.NewClient(r.Config.General.WorkingDirectory, r.Config.Todo.FileName, todo.FileTypeMarkdown.String())
 	contents, err := todoClient.ReadAll()
@@ -92,7 +96,7 @@ func (r *todoRepository) Delete(ctx context.Context, params *todo.DeleteParams) 
 		},
 	)
 	if len(deleteTodos) < 1 {
-		return nil, fmt.Errorf("not found")
+		return nil, errNotFound
 	}
 
 	filteredTodos := todos.FilterBy(

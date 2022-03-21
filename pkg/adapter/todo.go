@@ -20,7 +20,9 @@ func (a *Todo) Add() *cobra.Command {
 	type params struct {
 		done bool
 	}
-	p := &params{}
+	p := &params{
+		done: false,
+	}
 
 	c := &Command{
 		Command: "add",
@@ -33,6 +35,7 @@ func (a *Todo) Add() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 		Args:   cobra.ExactArgs(1),
@@ -47,6 +50,7 @@ func (a *Todo) Add() *cobra.Command {
 			)
 		},
 	}
+
 	return c.ToCobraCommand()
 }
 
@@ -54,9 +58,11 @@ func (a *Todo) List() *cobra.Command {
 	type params struct {
 		WithID bool
 	}
-	p := &params{}
+	p := &params{
+		WithID: false,
+	}
 
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "list",
 		Desc:    "list todos",
 		Aliases: []string{"l", "ls"},
@@ -72,6 +78,7 @@ func (a *Todo) List() *cobra.Command {
 				WithID: p.WithID,
 			})
 			Outputs(outputStrs)
+
 			return nil
 		},
 		SetFlags: func(cmd *cobra.Command) {
@@ -84,14 +91,12 @@ func (a *Todo) List() *cobra.Command {
 		},
 		Option: a.Option,
 	}
+
 	return c.ToCobraCommand()
 }
 
 func (a *Todo) Switch() *cobra.Command {
-	type params struct {
-		id string
-	}
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "switch",
 		Desc:    "switch todo done",
 		Aliases: []string{"s", "sw"},
@@ -101,11 +106,13 @@ func (a *Todo) Switch() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 		Args:   cobra.ExactArgs(1),
 		Option: a.Option,
 	}
+
 	return c.ToCobraCommand()
 }
 
@@ -113,9 +120,11 @@ func (a *Todo) Delete() *cobra.Command {
 	type params struct {
 		id string
 	}
-	p := &params{}
+	p := &params{
+		id: "",
+	}
 
-	c := &Command{
+	c := &Command{ //nolint:exhaustivestruct
 		Command: "delete",
 		Desc:    "delete todo",
 		Aliases: []string{"d", "del"},
@@ -126,6 +135,7 @@ func (a *Todo) Delete() *cobra.Command {
 			}); err != nil {
 				return err
 			}
+
 			return nil
 		},
 		Option: a.Option,
@@ -138,6 +148,7 @@ func (a *Todo) Delete() *cobra.Command {
 			)
 		},
 	}
+
 	return c.ToCobraCommand()
 }
 

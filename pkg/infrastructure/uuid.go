@@ -21,7 +21,7 @@ func (r *uuidRepository) Gen() string {
 	src := make([]byte, 1)
 	buf := make([]byte, uuidLen)
 	for i := 0; i < uuidLen; {
-		if _, err := rand.Read(src); err != nil {
+		if _, err := rand.Read(src); err != nil { //nolint:gosec
 			panic(err)
 		}
 		idx := int(src[0] & letterIdxMask)
@@ -30,6 +30,7 @@ func (r *uuidRepository) Gen() string {
 			i++
 		}
 	}
+
 	return string(buf)
 }
 

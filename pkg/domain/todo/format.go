@@ -7,6 +7,4 @@ type Format interface {
 	ParseAll(contents []string) Todos
 }
 
-var (
-	FormatMD = NewMarkdownFormat()
-)
+var FormatMD = NewMarkdownFormat()

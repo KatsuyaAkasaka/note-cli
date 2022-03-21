@@ -13,12 +13,11 @@ const (
 type markdown struct{}
 
 func (m *markdown) ToLine(t *Todo) string {
-	prefix := ""
+	prefix := doingPrefix
 	if t.Done {
 		prefix = donePrefix
-	} else {
-		prefix = doingPrefix
 	}
+
 	return prefix + t.ID + Delimiter + t.Content
 }
 
@@ -27,6 +26,7 @@ func (m *markdown) ToLineAll(ts Todos) []string {
 	for i := range ts {
 		dst[i] = m.ToLine(ts[i])
 	}
+
 	return dst
 }
 
@@ -42,6 +42,7 @@ func (m *markdown) Parse(content string) *Todo {
 		done = false
 	}
 	s := strings.Split(contentWithID, Delimiter)
+
 	return &Todo{
 		ID:      s[0],
 		Content: strings.Join(s[1:], Delimiter),
@@ -54,6 +55,7 @@ func (m *markdown) ParseAll(contents []string) Todos {
 	for i := range contents {
 		dst[i] = m.Parse(contents[i])
 	}
+
 	return dst
 }
 

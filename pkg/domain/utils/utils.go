@@ -7,5 +7,6 @@ import (
 
 func AbsolutePath(path string) string {
 	homeDir, _ := os.UserHomeDir()
+
 	return strings.ReplaceAll(path, "$HOME", homeDir)
 }

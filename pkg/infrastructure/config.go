@@ -11,7 +11,7 @@ type configRepository struct{}
 
 const errPrefix = "config err:"
 
-// Initialize initialize config based on predefined config
+// Initialize initialize config based on predefined config.
 func (r *configRepository) Initialize() (*config.Config, error) {
 	ConfigClient := io.ConfigClient()
 	PredefinedClient := io.PredefinedClient()
@@ -34,8 +34,10 @@ func (r *configRepository) Initialize() (*config.Config, error) {
 			return nil, fmt.Errorf("%s %w", errPrefix, err)
 		}
 	}
+
 	return ConfigClient.GetConfigWithOverwriteDefault(true)
 }
+
 func (r *configRepository) Reset() error {
 	ConfigClient := io.ConfigClient()
 	PredefinedClient := io.PredefinedClient()
@@ -45,6 +47,7 @@ func (r *configRepository) Reset() error {
 	if err := ConfigClient.WriteOrCreate(); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
+
 	return nil
 }
 
@@ -57,10 +60,11 @@ func (r *configRepository) SetWorkindDirectory(path string) error {
 	if err := confIO.Write(); err != nil {
 		return fmt.Errorf("%s %w", errPrefix, err)
 	}
+
 	return nil
 }
 
-func (r *configRepository) Get(params *config.ConfigGetParams) (*config.Config, error) {
+func (r *configRepository) Get(params *config.GetParams) (*config.Config, error) {
 	ConfigClient := io.ConfigClient()
 	var (
 		dst *config.Config
@@ -74,6 +78,7 @@ func (r *configRepository) Get(params *config.ConfigGetParams) (*config.Config, 
 	if err != nil {
 		return nil, err
 	}
+
 	return dst, nil
 }
 

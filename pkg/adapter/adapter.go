@@ -24,19 +24,25 @@ type Option struct {
 }
 
 func NewOption() *Option {
-	return &Option{}
+	return &Option{
+		Timeout:          0,
+		WorkingDirectory: "",
+	}
 }
 
 func (o *Option) Apply(i Kind, c *config.Config) *Option {
 	switch i {
 	case KindTodo, KindConfig:
 		o.Timeout = c.Todo.Timeout
+	case KindUnspecified:
+		o.Timeout = 5
 	}
 	o.WorkingDirectory = c.General.WorkingDirectory
+
 	return o
 }
 
-//Command command
+// Command command.
 type Command struct {
 	Command  string
 	Desc     string
@@ -48,7 +54,7 @@ type Command struct {
 }
 
 func (c *Command) ToCobraCommand() *cobra.Command {
-	cmd := &cobra.Command{
+	cmd := &cobra.Command{ //nolint:exhaustivestruct
 		Use:     c.Command,
 		Short:   c.Desc,
 		Aliases: c.Aliases,
@@ -65,7 +71,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("unknown error")
+				return fmt.Errorf("unknown error") //nolint:goerr113
 			case err := <-errCh:
 				return err
 			}
@@ -74,6 +80,7 @@ func (c *Command) ToCobraCommand() *cobra.Command {
 	if c.SetFlags != nil {
 		c.SetFlags(cmd)
 	}
+
 	return cmd
 }
 

@@ -25,6 +25,7 @@ func (u *ConfigUsecase) Init(ctx context.Context, flags *pflag.FlagSet, params *
 	if _, err := u.Repositories.ConfigRepository.Initialize(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -36,6 +37,7 @@ func (u *ConfigUsecase) Reset(ctx context.Context, flags *pflag.FlagSet, params 
 	if err := u.Repositories.ConfigRepository.Reset(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
