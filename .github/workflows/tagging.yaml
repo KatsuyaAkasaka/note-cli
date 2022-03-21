@@ -1,4 +1,4 @@
-name: 01_tagging
+name: 02_tagging
 
 on:
   workflow_dispatch:

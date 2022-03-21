@@ -1,0 +1,17 @@
+name: 01_build_lint_test
+
+on:
+  push:
+    branches:
+      - "*"
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v3.1.0

@@ -1,0 +1,25 @@
+run:
+  tests: false
+  allow-parallel-runners: true
+
+output:
+  print-issued-lines: false
+  sort-results: true
+
+linters:
+  enable-all: true
+  # deprecated になっているものを disable
+  # ref: https://golangci-lint.run/usage/linters/
+  disable:
+    - gci # goimports-reviserと競合するため無効化
+    - gochecknoglobals # グローバル変数を検出し一部の例外を除きエラーとするルール
+    - golint # メンテが終了
+    - interfacer # メンテが終了
+    - ireturn # Accept Interfaces, Return Concrete Types。インターフェースを返すパターンもあるので無効化
+    - lll # 横に並ぶ文字数をチェックするルール
+    - maligned # 構造体が最適なレイアウトになっているかチェックするルール
+    - scopelint # メンテが終了
+    - varnamelen # 変数の文字数チェックするルール
+    - wrapcheck # errorのwrapをしてるかチェックするルール
+    - wsl # gofmt で同じ検査ができるため無効化
+
