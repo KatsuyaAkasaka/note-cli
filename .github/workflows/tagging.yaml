@@ -11,7 +11,7 @@ on:
         options:
           - "patch"
           - "minor"
-          - "majour"
+          - "major"
 jobs:
   tagging:
     runs-on: ubuntu-20.04
