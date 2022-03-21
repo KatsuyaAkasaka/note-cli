@@ -21,17 +21,17 @@ changelog:
   sort: asc
   groups:
   - title: Features
-    regexp: "^feat:\\s.+$"
+    regexp: "^feat: .+$"
     order: 0
   - title: Bug fixes
-    regexp: "^fix:\\s.+$"
+    regexp: "^fix: .+$"
     order: 1
   - title: Others
     order: 999
   filters:
     exclude:
-      - "^docs:\\s.+"
-      - "^test:\\s.+"
+      - "^docs: .+"
+      - "^test: .+"
 brews:
   -
     # Name template of the recipe

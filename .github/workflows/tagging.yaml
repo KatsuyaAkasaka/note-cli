@@ -1,11 +1,11 @@
 name: tagging
+
 on:
   workflow_dispatch:
     inputs:
       tag_name:
         description: 'tag name (e.g. v1.2.3)'
         required: true
-
 jobs:
    tagging:
      runs-on: ubuntu-latest
