@@ -19,10 +19,19 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
+  groups:
+  - title: Features
+    regexp: "^feat:\\s.+$"
+    order: 0
+  - title: Bug fixes
+    regexp: "^fix:\\s.+$"
+    order: 1
+  - title: Others
+    order: 999
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:\\s.+"
+      - "^test:\\s.+"
 brews:
   -
     # Name template of the recipe
